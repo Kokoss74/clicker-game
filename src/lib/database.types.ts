@@ -6,6 +6,12 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export interface DiscountRange {
+  min: number
+  max: number | null
+  discount: number
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -62,17 +68,17 @@ export interface Database {
         Row: {
           id: number
           attempts_number: number
-          discount_ranges: Json
+          discount_ranges: DiscountRange[]
         }
         Insert: {
           id?: number
           attempts_number?: number
-          discount_ranges?: Json
+          discount_ranges?: DiscountRange[]
         }
         Update: {
           id?: number
           attempts_number?: number
-          discount_ranges?: Json
+          discount_ranges?: DiscountRange[]
         }
       }
       admins: {

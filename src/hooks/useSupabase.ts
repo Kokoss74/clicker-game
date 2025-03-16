@@ -96,14 +96,29 @@ export const useSupabase = (): UseSupabaseReturn => {
   }
 
   /**
-   * Вычисляет скидку на основе отклонения
+   * Вычисляет скидку на основе отклонения, используя настройки из gameStore
    */
   const calculateDiscount = (difference: number): number => {
-    if (difference === 0) return 25
-    if (difference <= 10) return 15
-    if (difference <= 50) return 10
-    if (difference <= 100) return 5
-    return 3
+    // Получаем настройки скидок из gameStore
+    const discountRanges = gameStore.settings?.discount_ranges
+    
+    // Если настройки не загружены, используем значения по умолчанию
+    if (!discountRanges || !Array.isArray(discountRanges) || discountRanges.length === 0) {
+      if (difference === 0) return 25
+      if (difference <= 10) return 15
+      if (difference <= 50) return 10
+      if (difference <= 100) return 5
+      return 3
+    }
+    
+    // Находим подходящий диапазон для текущего difference
+    const matchingRange = discountRanges.find(range =>
+      difference >= range.min &&
+      (range.max === null || difference <= range.max)
+    )
+    
+    // Возвращаем найденную скидку или минимальную скидку по умолчанию
+    return matchingRange ? matchingRange.discount : 3
   }
 
   /**
