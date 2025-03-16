@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { ToastContainer } from 'react-toastify'
+import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useAuthStore } from './store/auth'
 import { useGameStore } from './store/game'
@@ -12,6 +12,30 @@ function AuthForm() {
   const [isSignUp, setIsSignUp] = React.useState(false);
   const [phone, setPhone] = React.useState('');
   const [name, setName] = React.useState('');
+  const [localError, setLocalError] = React.useState<string | null>(null);
+  
+  // Отслеживаем ошибку неверных учетных данных и синхронизируем локальную ошибку
+  React.useEffect(() => {
+    setLocalError(error);
+    
+    if (error === 'Invalid login credentials') {
+      // Показываем toast с сообщением
+      toast.error('Пользователь не зарегистрирован. Создайте аккаунт.');
+      // Переключаемся на режим регистрации
+      setIsSignUp(true);
+    }
+  }, [error]);
+  
+  // Очистка ошибки при изменении полей ввода
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(e.target.value);
+    setLocalError(null);
+  };
+  
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+    setLocalError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +60,7 @@ function AuthForm() {
           <input
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={handlePhoneChange}
             placeholder="Например: 050-1234567"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
@@ -50,7 +74,7 @@ function AuthForm() {
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={handleNameChange}
               placeholder="Ваше имя"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
@@ -72,9 +96,9 @@ function AuthForm() {
         {isSignUp ? 'Уже есть аккаунт?' : 'Создать аккаунт'}
       </button>
       
-      {error && (
+      {localError && (
         <div className="mt-4 text-red-500 text-center">
-          {error}
+          {localError}
         </div>
       )}
     </div>
