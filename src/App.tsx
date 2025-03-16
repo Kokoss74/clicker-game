@@ -39,7 +39,13 @@ function AuthForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (isSignUp) {
+      // Проверка имени на минимальную длину
+      if (name.trim().length < 3) {
+        setLocalError('Имя должно содержать минимум 3 символа');
+        return;
+      }
       await signUp({ phone, name });
     } else {
       await signIn({ phone });
