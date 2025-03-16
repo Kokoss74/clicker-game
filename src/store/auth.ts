@@ -3,6 +3,7 @@ import { auth } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 import type { SignUpData, SignInData } from '../lib/auth';
 import { Database } from '../lib/database.types';
+import { normalizePhone } from '../lib/auth';
 
 type User = Database['public']['Tables']['users']['Row'];
 
@@ -31,10 +32,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Ждем немного, чтобы триггер успел создать запись
       await new Promise(resolve => setTimeout(resolve, 1500));
 
+      const normalizedPhone = normalizePhone(data.phone);
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
-        .eq('phone', data.phone)
+        .eq('phone', normalizedPhone)
         .maybeSingle();
 
       if (userError) throw userError;
@@ -52,11 +54,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       
       const { error } = await auth.signIn(data);
       if (error) throw error;
-
+      
+      const normalizedPhone = normalizePhone(data.phone);
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
-        .eq('phone', data.phone)
+        .eq('phone', normalizedPhone)
         .maybeSingle();
 
       if (userError) throw userError;
