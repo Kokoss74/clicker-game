@@ -13,7 +13,7 @@ type Attempt = Database["public"]["Tables"]["attempts"]["Row"];
 const Game: React.FC = () => {
   const { user } = useAuthStore();
   const { time, milliseconds, startTimer, stopTimer, resetTimer } = useTimer();
-  const { recordAttempt, getUserAttempts, getUser } = useSupabase();
+  const { recordAttempt, getUserAttempts, getUser, calculateDiscount } = useSupabase();
 
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [showRules, setShowRules] = useState(false);
@@ -153,20 +153,23 @@ const Game: React.FC = () => {
         </button>
 
         <div className="mt-6">
-          <h2 className="text-xl font-bold mb-2">Попытки:</h2>
           <p className="mb-2">Осталось попыток: {currentUser.attempts_left}</p>
           {currentUser.best_result !== null && (
             <p className="mb-2">
-              Лучший результат: {currentUser.best_result} мс (Скидка:{" "}
-              {formatDiscount(currentUser.discount)})
+              Лучший результат: {currentUser.best_result} мс 
             </p>
-          )}
+            )}
+            <p> 
+            Скидка:{" "}
+              {formatDiscount(currentUser.discount)}
+          </p>  
 
           <table className="w-full mt-4 border-collapse">
             <thead>
               <tr className="bg-gray-700">
                 <th className="p-2 text-left">#</th>
                 <th className="p-2 text-left">Отклонение (мс)</th>
+                <th className="p-2 text-left">Скидка</th>
                 <th className="p-2 text-left">Дата и время</th>
               </tr>
             </thead>
@@ -185,6 +188,7 @@ const Game: React.FC = () => {
                 >
                   <td className="p-2">{index + 1}</td>
                   <td className="p-2">{attempt.difference}</td>
+                  <td className="p-2">{formatDiscount(calculateDiscount(attempt.difference))}</td>
                   <td className="p-2">
                     {new Date(attempt.created_at).toLocaleDateString("ru-RU", {
                       day: "2-digit",
@@ -203,7 +207,7 @@ const Game: React.FC = () => {
 
               {displayedAttempts.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="p-2 text-center">
+                  <td colSpan={4} className="p-2 text-center">
                     Нет попыток
                   </td>
                 </tr>
