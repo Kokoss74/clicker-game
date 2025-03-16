@@ -81,10 +81,15 @@ const Game: React.FC = () => {
   const handleAttempt = async () => {
     if (!user || !currentUser) return;
 
-    if (currentUser.attempts_left <= 0 || isButtonDisabled) {
+    if (currentUser.attempts_left <= 0) {
       toast.error(
         `Для продолжения игры необходимо использовать имеющуюся скидку ${currentUser.discount}% в магазине.`
       );
+      return;
+    }
+    
+    if (isButtonDisabled) {
+      toast.warning("Пожалуйста, подождите перед следующей попыткой");
       return;
     }
 
