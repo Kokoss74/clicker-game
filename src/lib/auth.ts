@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+const regexPhone = /^(?:\+972|0)-?(?:[5789]\d)-?\d{3}-?\d{4}$/;
 
 export interface SignUpData {
   phone: string;
@@ -35,7 +36,7 @@ export const auth = {
   signUp: async ({ phone, name }: SignUpData) => {
     try {
       // Проверяем формат телефона
-      if (!phone.match(/^(?:(?:\+972|0)(?:-)?(?:5|7|8|9))(\d{1,8})$/)) {
+      if (!phone.match(regexPhone)) {
         throw new Error('Неверный формат телефона');
       }
 
@@ -73,7 +74,7 @@ export const auth = {
   signIn: async ({ phone }: SignInData) => {
     try {
       // Проверяем формат телефона
-      if (!phone.match(/^(?:(?:\+972|0)(?:-)?(?:5|7|8|9))(\d{1,8})$/)) {
+      if (!phone.match(regexPhone)) {
         throw new Error('Неверный формат телефона');
       }
 

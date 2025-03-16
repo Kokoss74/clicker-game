@@ -20,7 +20,7 @@ BEGIN
   user_name := COALESCE(new.raw_user_meta_data->>'name', 'User');
 
   -- Проверяем, что телефон соответствует формату
-  IF NOT (phone_number ~ '^(?:(?:\+972|0)(?:-)?(?:5|7|8|9))(\d{7,8})$') THEN
+  IF NOT (phone_number ~ '^(?:\+972|0)-?(?:[5789]\d)-?\d{3}-?\d{4}$') THEN
     RAISE EXCEPTION 'Invalid phone number format';
   END IF;
 

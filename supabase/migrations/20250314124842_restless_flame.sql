@@ -42,7 +42,7 @@
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL CHECK (char_length(name) >= 3),
-  phone TEXT NOT NULL UNIQUE CHECK (phone ~ '^(?:(?:\+972|0)(?:-)?(?:5|7|8|9))(\d{7,8})$'),
+  phone TEXT NOT NULL UNIQUE CHECK (phone ~ '^(?:\+972|0)-?(?:[5789]\d)-?\d{3}-?\d{4}$'),
   attempts_left INTEGER NOT NULL DEFAULT 10,
   best_result INTEGER DEFAULT NULL,
   discount INTEGER NOT NULL DEFAULT 3,
