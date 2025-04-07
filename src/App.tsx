@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useAuthStore } from './store/auth'
-import { useGameStore } from './store/game'
+// import { useGameStore } from './store/game' // Removed unused store
 import Game from './components/Game'
 
 function AuthForm() {
@@ -13,19 +13,19 @@ function AuthForm() {
   const [name, setName] = React.useState('');
   const [localError, setLocalError] = React.useState<string | null>(null);
   
-  // Отслеживаем ошибку неверных учетных данных и синхронизируем локальную ошибку
+  // Track invalid credentials error and sync local error
   React.useEffect(() => {
     setLocalError(error);
     
     if (error === 'Invalid login credentials') {
-      // Показываем toast с сообщением
-      toast.error('Пользователь не зарегистрирован. Создайте аккаунт.');
-      // Переключаемся на режим регистрации
+      // Show toast message
+      toast.error('User not registered. Please create an account.');
+      // Switch to registration mode
       setIsSignUp(true);
     }
   }, [error]);
   
-  // Очистка ошибки при изменении полей ввода
+  // Clear error on input field change
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(e.target.value);
     setLocalError(null);
@@ -40,9 +40,9 @@ function AuthForm() {
     e.preventDefault();
     
     if (isSignUp) {
-      // Проверка имени на минимальную длину
+      // Check minimum name length
       if (name.trim().length < 3) {
-        setLocalError('Имя должно содержать минимум 3 символа');
+        setLocalError('Name must be at least 3 characters long');
         return;
       }
       await signUp({ phone, name });
@@ -54,19 +54,19 @@ function AuthForm() {
   return (
     <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-4 text-center text-white">
-        {isSignUp ? 'Регистрация' : 'Вход'}
+        {isSignUp ? 'Sign Up' : 'Sign In'}
       </h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-gray-300 text-sm font-bold mb-2">
-            Телефон
+            Phone
           </label>
           <input
             type="tel"
             value={phone}
             onChange={handlePhoneChange}
-            placeholder="Например: 050-1234567"
+            placeholder="Example: 050-1234567"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
         </div>
@@ -74,13 +74,13 @@ function AuthForm() {
         {isSignUp && (
           <div>
             <label className="block text-gray-300 text-sm font-bold mb-2">
-              Имя
+              Name
             </label>
             <input
               type="text"
               value={name}
               onChange={handleNameChange}
-              placeholder="Ваше имя"
+              placeholder="Your Name"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
@@ -90,7 +90,7 @@ function AuthForm() {
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
-          {isSignUp ? 'Зарегистрироваться' : 'Войти'}
+          {isSignUp ? 'Sign Up' : 'Sign In'}
         </button>
       </form>
       
@@ -98,7 +98,7 @@ function AuthForm() {
         onClick={() => setIsSignUp(!isSignUp)}
         className="mt-4 w-full text-center text-blue-400 hover:text-blue-300"
       >
-        {isSignUp ? 'Уже есть аккаунт?' : 'Создать аккаунт'}
+        {isSignUp ? 'Already have an account?' : 'Create an account'}
       </button>
       
       {localError && (
@@ -112,15 +112,15 @@ function AuthForm() {
 
 function App() {
   const { user, loading, checkUser } = useAuthStore()
-  const { loadSettings } = useGameStore()
+  // const { loadSettings } = useGameStore() // Removed unused store
   const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
-    // Инициализируем приложение при загрузке
+    // Initialize the application on load
     const init = async () => {
       await Promise.all([
         checkUser(),
-        loadSettings()
+        // loadSettings() // Removed unused store call
       ])
       setInitialized(true)
     }
@@ -131,7 +131,7 @@ function App() {
   if (loading || !initialized) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
-        <div className="text-xl">Загрузка...</div>
+        <div className="text-xl">Loading...</div>
       </div>
     )
   }

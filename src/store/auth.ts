@@ -29,7 +29,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { error } = await auth.signUp(data);
       if (error) throw error;
 
-      // Ждем немного, чтобы триггер успел создать запись
+      // Wait a bit for the trigger to create the user record
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       const normalizedPhone = normalizePhone(data.phone);
@@ -40,7 +40,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         .maybeSingle();
 
       if (userError) throw userError;
-      if (!userData) throw new Error('Ошибка при создании пользователя');
+      if (!userData) throw new Error('Error creating user');
 
       set({ user: userData, loading: false });
     } catch (error) {
@@ -63,7 +63,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         .maybeSingle();
 
       if (userError) throw userError;
-      if (!userData) throw new Error('Пользователь не найден');
+      if (!userData) throw new Error('User not found');
 
       set({ user: userData, loading: false });
     } catch (error) {

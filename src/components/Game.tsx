@@ -5,61 +5,70 @@ import { useSupabase } from "../hooks/useSupabase";
 import { useAuthStore } from "../store/auth";
 import ModalRules from "./ModalRules";
 import { Database } from "../lib/database.types";
-import { formatDiscount } from "../utils/formatUtils";
+// Removed formatDiscount, will use gameUtils instead
+import { calculateSmiles, formatRemainingCooldown, generateSmileEmojis } from "../utils/gameUtils";
 
-type User = Database["public"]["Tables"]["users"]["Row"];
+// Assume backend will add these fields. TODO: Update when DB schema changes.
+type User = Database["public"]["Tables"]["users"]["Row"] & {
+  last_attempt_at?: string | null; // Timestamp of the last attempt
+  total_smiles?: number; // Total smiles collected
+};
 type Attempt = Database["public"]["Tables"]["attempts"]["Row"];
 
 const Game: React.FC = () => {
   const { user } = useAuthStore();
   const { time, milliseconds, startTimer, stopTimer, resetTimer } = useTimer();
-  const { recordAttempt, getUserAttempts, getUser, calculateDiscount } = useSupabase();
+  // Removed calculateDiscount. recordAttempt needs backend update.
+  const { recordAttempt, getUserAttempts, getUser } = useSupabase();
 
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [showRules, setShowRules] = useState(false);
   const [bestResultIndex, setBestResultIndex] = useState<number | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(user);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [cooldownActive, setCooldownActive] = useState(false);
+  const [cooldownEndTime, setCooldownEndTime] = useState<number | null>(null);
 
-  // Запускаем таймер при загрузке компонента
+  // Start the timer when the component loads
   useEffect(() => {
     if (!user) return;
 
     startTimer();
 
-    // Загружаем попытки пользователя при монтировании компонента
+    // Load user attempts when the component mounts
     const loadAttempts = async () => {
       const userAttempts = await getUserAttempts(user.id);
       setAttempts(userAttempts);
 
-      // Обновляем данные пользователя
-      const updatedUser = await getUser(user.id);
+      // Update user data
+      const updatedUser = await getUser(user.id) as User | null; // Cast to include potential new fields
       if (updatedUser) {
         setCurrentUser(updatedUser);
-      }
+        // checkCooldown(updatedUser); // Check cooldown status on load - Definition added below
 
-      // Если у пользователя закончились попытки, находим лучший результат
-      if (updatedUser && updatedUser.attempts_left <= 0) {
-        findBestResult(userAttempts);
+        // If the user has run out of attempts, find the best result
+        if (updatedUser.attempts_left <= 0) {
+          findBestResult(userAttempts);
+        }
       }
     };
 
     loadAttempts();
 
-    // Очищаем интервал при размонтировании компонента
+    // Clear the interval when the component unmounts
     return () => {
       stopTimer();
     };
   }, [user?.id]);
 
-  // Находим индекс лучшего результата (минимальное отклонение)
+  // Find the index of the best result (minimum difference)
   const findBestResult = (attemptsData: Attempt[]) => {
     if (attemptsData.length === 0) return;
 
     let minDiff = Number.MAX_VALUE;
     let minIndex = -1;
 
-    // Находим индекс лучшего результата в отображаемых попытках
+    // Find the index of the best result in the displayed attempts
     const displayedAttempts = attemptsData.slice(-10);
     displayedAttempts.forEach((attempt, index) => {
       if (attempt.difference < minDiff) {
@@ -73,56 +82,101 @@ const Game: React.FC = () => {
     }
   };
 
-  // Ограничиваем отображение попыток до 10 последних
+  // Limit the display of attempts to the last 10
   const displayedAttempts = useMemo(() => {
     return attempts.slice(-10);
   }, [attempts]);
 
+  // Function to check and set cooldown state
+  const checkCooldown = (userData: User | null) => {
+    if (userData && userData.attempts_left <= 0 && userData.last_attempt_at) {
+      const lastAttemptTime = new Date(userData.last_attempt_at).getTime();
+      const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+      const cooldownEnds = lastAttemptTime + oneHour;
+
+      if (Date.now() < cooldownEnds) {
+        setCooldownActive(true);
+        setCooldownEndTime(cooldownEnds);
+      } else {
+        // Cooldown finished, backend should reset. Refresh user data.
+        setCooldownActive(false);
+        setCooldownEndTime(null);
+        // TODO: Trigger user data refresh here if backend doesn't push updates.
+        // Example: getUser(user.id).then(updated => setCurrentUser(updated as User));
+        // For now, assume getUser called later will fetch the reset state if backend handled it.
+      }
+    } else {
+      setCooldownActive(false);
+      setCooldownEndTime(null);
+    }
+  };
+
+  // Check cooldown whenever relevant user data might change, and on initial load
+   useEffect(() => {
+     checkCooldown(currentUser);
+   }, [currentUser]); // Check whenever currentUser object changes
+
   const handleAttempt = async () => {
     if (!user || !currentUser) return;
 
+    // Check cooldown first if attempts are zero
     if (currentUser.attempts_left <= 0) {
-      toast.error(
-        `Для продолжения игры необходимо использовать имеющуюся скидку ${currentUser.discount}% в магазине.`
-      );
-      return;
+      // Re-check cooldown state just before showing message
+      checkCooldown(currentUser);
+      if (cooldownActive && cooldownEndTime) {
+        toast.warning(`Next game will be available ${formatRemainingCooldown(cooldownEndTime)}.`);
+      } else {
+         // This case implies cooldown finished but backend hasn't reset yet, or no last_attempt_at field
+         toast.info("Attempts finished. Waiting for reset or backend update.");
+         // Optionally trigger a manual refresh of user data here
+         // getUser(user.id).then(updated => setCurrentUser(updated as User));
+      }
+      return; // Stop attempt if no attempts left
     }
+
+    // Check if button is manually disabled (e.g., during the 2-second wait)
     
     if (isButtonDisabled) {
-      toast.warning("Пожалуйста, подождите перед следующей попыткой");
+      toast.warning("Please wait before the next attempt");
       return;
     }
 
     setIsButtonDisabled(true);
-    setTimeout(() => setIsButtonDisabled(false), 2000); // Блокируем кнопку на 2 секунды для защиты от автокликеров
+    setTimeout(() => setIsButtonDisabled(false), 2000); // Disable button for 2 seconds to prevent autoclickers
 
     stopTimer();
 
-    // Вычисляем отклонение от целой секунды
+    // Calculate the difference from a whole second
     const diff: number =
       milliseconds < 500 ? milliseconds : 1000 - milliseconds;
-    const success: boolean = await recordAttempt(user.id, diff);
+    const smilesEarned = calculateSmiles(diff);
+    // TODO: Backend update needed for recordAttempt to accept smiles and update last_attempt_at/total_smiles.
+    // Assuming recordAttempt is updated like: recordAttempt(userId, difference, smiles)
+    // TODO: Backend update needed for recordAttempt to accept smiles and update last_attempt_at/total_smiles.
+    // The hook currently expects 2 args. This will cause a TS error until the hook is updated.
+    // Passing smilesEarned as the third argument optimistically.
+    const success: boolean = await recordAttempt(user.id, diff /*, smilesEarned */); // Temporarily comment out 3rd arg if hook not updated
 
     if (success) {
-      // Оповещаем пользователя о результате
-      toast.success(`Отклонение: ${diff} мс`);
+      // Notify the user about the result
+      toast.success(`Difference: ${diff} ms. You earned ${smilesEarned} smiles!`);
 
       const userAttempts = await getUserAttempts(user.id);
       setAttempts(userAttempts);
 
-      // Обновляем данные пользователя
-      const updatedUser = await getUser(user.id);
+      // Update user data (cast to include potential new fields)
+      const updatedUser = await getUser(user.id) as User | null;
       if (updatedUser) {
         setCurrentUser(updatedUser);
+        checkCooldown(updatedUser); // Re-check cooldown after attempt updates user data
 
-        // Проверяем, закончились ли попытки у пользователя
+        // Check if the user has run out of attempts AFTER this attempt
         if (updatedUser.attempts_left <= 0) {
+          const totalSmiles = updatedUser.total_smiles ?? 0; // Use 0 if undefined from DB
           toast.info(
-            `Попытки закончились! Ваша скидка: ${formatDiscount(
-              updatedUser.discount
-            )}`
+            `Thank you for playing! You collected ${totalSmiles} smiles! ${generateSmileEmojis(totalSmiles)}`
           );
-          findBestResult(userAttempts);
+          findBestResult(userAttempts); // Highlight best result now
         }
       }
     }
@@ -134,14 +188,14 @@ const Game: React.FC = () => {
   if (!user || !currentUser) {
     return (
       <div className="flex justify-center items-center h-screen">
-        Загрузка...
+        Loading...
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
-      <h1 className="text-3xl font-bold text-center mb-8">Haim Clicker</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">Clicker Game</h1>
 
       <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
         <div className="timer text-4xl font-mono mb-6 text-center">{time}</div>
@@ -149,33 +203,33 @@ const Game: React.FC = () => {
         <button
           onClick={handleAttempt}
           className={`w-full py-4 rounded-lg text-xl font-bold transition-colors ${
-            isButtonDisabled || currentUser.attempts_left <= 0
-              ? "bg-gray-600 cursor-not-allowed"
+            isButtonDisabled || cooldownActive || (currentUser && currentUser.attempts_left <= 0)
+              ? "bg-gray-600 cursor-not-allowed" // Disabled if waiting, cooldown active, or no attempts left
               : "bg-blue-600 hover:bg-blue-700"
           }`}
         >
-          Нажать
+          Click Me!
         </button>
 
         <div className="mt-6">
-          <p className="mb-2">Осталось попыток: {currentUser.attempts_left}</p>
+          <p className="mb-2">Attempts left: {currentUser.attempts_left}</p>
           {currentUser.best_result !== null && (
             <p className="mb-2">
-              Лучший результат: {currentUser.best_result} мс 
+              Best Result: {currentUser.best_result} ms
             </p>
             )}
-            <p> 
-            Скидка:{" "}
-              {formatDiscount(currentUser.discount)}
-          </p>  
+            {/* Display total smiles if available and attempts are finished */}
+            {currentUser.attempts_left <= 0 && currentUser.total_smiles !== undefined && (
+              <p className="mt-2">Total Smiles Collected: {currentUser.total_smiles} {generateSmileEmojis(currentUser.total_smiles)}</p>
+            )}
 
           <table className="w-full mt-4 border-collapse">
             <thead>
               <tr className="bg-gray-700">
                 <th className="p-2 text-left">#</th>
-                <th className="p-2 text-left">Отклонение (мс)</th>
-                <th className="p-2 text-left">Скидка</th>
-                <th className="p-2 text-left">Дата и время</th>
+                <th className="p-2 text-left">Difference (ms)</th>
+                <th className="p-2 text-left">Smiles 😊</th>
+                <th className="p-2 text-left">Date & Time</th>
               </tr>
             </thead>
             <tbody>
@@ -193,19 +247,18 @@ const Game: React.FC = () => {
                 >
                   <td className="p-2">{index + 1}</td>
                   <td className="p-2">{attempt.difference}</td>
-                  <td className="p-2">{formatDiscount(calculateDiscount(attempt.difference))}</td>
+                  <td className="p-2 text-center">{calculateSmiles(attempt.difference)}</td>
                   <td className="p-2">
-                    {new Date(attempt.created_at).toLocaleDateString("ru-RU", {
+                    {/* Using en-GB for DD/MM/YYYY format, adjust if needed */}
+                    {new Date(attempt.created_at).toLocaleDateString("en-GB", {
                       day: "2-digit",
                       month: "2-digit",
                       year: "numeric",
-                    }) +
-                      " " +
-                      new Date(attempt.created_at).toLocaleTimeString("ru-RU", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false
-                      })}
+                    })} {new Date(attempt.created_at).toLocaleTimeString("en-GB", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })}
                   </td>
                 </tr>
               ))}
@@ -213,7 +266,7 @@ const Game: React.FC = () => {
               {displayedAttempts.length === 0 && (
                 <tr>
                   <td colSpan={4} className="p-2 text-center">
-                    Нет попыток
+                    No attempts yet
                   </td>
                 </tr>
               )}
@@ -225,7 +278,7 @@ const Game: React.FC = () => {
           onClick={() => setShowRules(true)}
           className="mt-6 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
         >
-          Правила игры
+          Game Rules
         </button>
       </div>
 

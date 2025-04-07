@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { useGameStore } from '../store/game'
+// import { useGameStore } from '../store/game' // Removed unused store
 import { Database } from '../lib/database.types'
 
 type User = Database['public']['Tables']['users']['Row']
@@ -12,24 +12,30 @@ interface UseSupabaseReturn {
   recordAttempt: (userId: string, difference: number) => Promise<boolean>
   getUserAttempts: (userId: string) => Promise<Attempt[]>
   getUser: (userId: string) => Promise<User | null>
-  calculateDiscount: (difference: number) => number
+  // calculateDiscount removed
   resetUserAttempts: (userId: string) => Promise<boolean>
 }
 
 export const useSupabase = (): UseSupabaseReturn => {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-  const gameStore = useGameStore()
+  // const gameStore = useGameStore() // Removed unused store
 
   /**
-   * Записывает новую попытку пользователя
+   * Records a new user attempt.
+   * TODO: Backend needs update to accept smiles, update total_smiles and last_attempt_at.
+   * @param userId The user's ID.
+   * @param difference The time difference for the attempt.
+   * @param smilesEarned The number of smiles earned for this attempt (currently unused, pending backend update).
    */
-  const recordAttempt = async (userId: string, difference: number): Promise<boolean> => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const recordAttempt = async (userId: string, difference: number, _smilesEarned?: number): Promise<boolean> => { // Prefix with _ or add eslint ignore
+    // Note: smilesEarned is currently unused until backend is updated.
     try {
       setLoading(true)
       setError(null)
 
-      // Проверяем, остались ли у пользователя попытки
+      // Check if the user has attempts left
       const { data: userData, error: userCheckError } = await supabase
         .from('users')
         .select('attempts_left')
@@ -37,29 +43,29 @@ export const useSupabase = (): UseSupabaseReturn => {
         .single()
 
       if (userCheckError) throw userCheckError
-      if (userData.attempts_left <= 0) {
-        setError('У вас не осталось попыток')
+      if (!userData || userData.attempts_left <= 0) {
+        setError('No attempts left or user not found.')
         return false
       }
 
-      // Записываем попытку
+      // Record the attempt
       const { error: attemptError } = await supabase
         .from('attempts')
         .insert([{ user_id: userId, difference }])
 
       if (attemptError) throw attemptError
 
-      // Обновляем количество попыток пользователя
-      const { data: updatedUser, error: updateError } = await supabase
+      // Update user's attempts left and potentially last_attempt_at (placeholder)
+      const { error: updateError } = await supabase
         .from('users')
         .update({
           attempts_left: userData.attempts_left - 1,
-          // Если это последняя попытка, обновляем лучший результат и скидку
-          ...(userData.attempts_left === 1 ? await calculateBestResult(userId) : {})
+          // TODO: Backend should handle updating total_smiles and last_attempt_at.
+          // The following is a placeholder assuming backend handles it via triggers or functions.
+          last_attempt_at: new Date().toISOString(), // Placeholder: Update last attempt time
         })
         .eq('id', userId)
-        .select()
-        .single()
+      // Removed .select().single() as updatedUser data is not used here anymore
 
       if (updateError) throw updateError
 
@@ -72,57 +78,12 @@ export const useSupabase = (): UseSupabaseReturn => {
     }
   }
 
-  /**
-   * Вычисляет лучший результат и скидку пользователя
-   */
-  const calculateBestResult = async (userId: string) => {
-    const { data: attempts, error } = await supabase
-      .from('attempts')
-      .select('difference')
-      .eq('user_id', userId)
-      .order('difference', { ascending: true })
-      .limit(1)
-
-    if (error) throw error
-    if (!attempts || attempts.length === 0) return {}
-
-    const bestResult = attempts[0].difference
-    const discount = calculateDiscount(bestResult)
-
-    return {
-      best_result: bestResult,
-      discount
-    }
-  }
+  // Removed calculateBestResult and calculateDiscount functions as they are no longer needed.
+  // Smile calculation is done in the frontend (gameUtils.ts).
+  // Best result is now just informational and stored directly in the user table if needed.
 
   /**
-   * Вычисляет скидку на основе отклонения, используя настройки из gameStore
-   */
-  const calculateDiscount = (difference: number): number => {
-    // Получаем настройки скидок из gameStore
-    const discountRanges = gameStore.settings?.discount_ranges
-    
-    // Если настройки не загружены, используем значения по умолчанию
-    if (!discountRanges || !Array.isArray(discountRanges) || discountRanges.length === 0) {
-      if (difference === 0) return 25
-      if (difference <= 10) return 15
-      if (difference <= 50) return 10
-      if (difference <= 100) return 5
-      return 3
-    }
-    
-    // Находим подходящий диапазон для текущего difference
-    const matchingRange = discountRanges.find(range =>
-      difference >= range.min &&
-      (range.max === null || difference <= range.max)
-    )
-    
-    // Возвращаем найденную скидку или минимальную скидку по умолчанию
-    return matchingRange ? matchingRange.discount : 3
-  }
-
-  /**
-   * Получает все попытки пользователя
+   * Gets all attempts for a user.
    */
   const getUserAttempts = async (userId: string): Promise<Attempt[]> => {
     try {
@@ -147,7 +108,7 @@ export const useSupabase = (): UseSupabaseReturn => {
   }
 
   /**
-   * Получает данные пользователя
+   * Gets user data by ID.
    */
   const getUser = async (userId: string): Promise<User | null> => {
     try {
@@ -172,26 +133,30 @@ export const useSupabase = (): UseSupabaseReturn => {
   }
 
   /**
-   * Сбрасывает попытки пользователя
+   * Resets user attempts and related stats.
+   * TODO: Backend needs update to handle resetting based on last_attempt_at + 1 hour cooldown.
+   * This function might become obsolete if backend handles reset automatically.
    */
   const resetUserAttempts = async (userId: string): Promise<boolean> => {
     try {
       setLoading(true)
       setError(null)
 
-      // Сбрасываем попытки пользователя
+      // Reset user attempts
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          attempts_left: gameStore.settings?.attempts_number || 10,
+          // TODO: Fetch attempts_number from game_settings if needed, or use a constant. Using 10 for now.
+          attempts_left: 10,
           best_result: null,
-          discount: 0
+          // discount: 0, // Removed discount
+          total_smiles: 0 // Placeholder: Reset total smiles
         })
         .eq('id', userId)
 
       if (updateError) throw updateError
 
-      // Удаляем все попытки пользователя
+      // Delete all user attempts (optional, depends on whether history should be kept)
       const { error: deleteError } = await supabase
         .from('attempts')
         .delete()
@@ -214,7 +179,7 @@ export const useSupabase = (): UseSupabaseReturn => {
     recordAttempt,
     getUserAttempts,
     getUser,
-    calculateDiscount,
+    // calculateDiscount removed
     resetUserAttempts
   }
 }
