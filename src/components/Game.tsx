@@ -42,56 +42,84 @@ const Game: React.FC = () => {
     startTimer();
 
     // Load user attempts when the component mounts
-    const loadAttempts = async () => {
-      const userAttempts = await getUserAttempts(user.id);
-      setAttempts(userAttempts);
+    // Load initial user data and potentially attempts from the current session
+    const loadInitialData = async () => {
+      // Get user data first
+      const loadedUser = (await getUser(user.id)) as User | null;
+      if (!loadedUser) return; // Exit if user data couldn't be loaded
+      setCurrentUser(loadedUser);
 
-      // Update user data
-      const updatedUser = (await getUser(user.id)) as User | null; // Cast to include potential new fields
-      if (updatedUser) {
-        setCurrentUser(updatedUser);
-        // checkCooldown(updatedUser); // Check cooldown status on load - Definition added below
+      // Get the number of attempts per session
+      const attemptsLimit = settings?.attempts_number ?? 10;
 
-        // If the user has run out of attempts, find the best result
-        if (updatedUser.attempts_left <= 0) {
-          findBestResult(userAttempts);
+      let userAttempts: Attempt[] = [];
+      if (loadedUser.attempts_left > 0) {
+        // Session is active, load attempts made in this session
+        const attemptsMadeThisSession = attemptsLimit - loadedUser.attempts_left;
+        if (attemptsMadeThisSession > 0) {
+          userAttempts = await getUserAttempts(user.id, attemptsMadeThisSession);
         }
+        // If attempts_left === attemptsLimit (start of session), userAttempts remains []
+      } else {
+        // Session is finished (or cooldown active), load last session's attempts
+        userAttempts = await getUserAttempts(user.id, attemptsLimit);
       }
+      setAttempts(userAttempts); // Set attempts based on session state
     };
 
-    loadAttempts();
+    loadInitialData();
 
     // Clear the interval when the component unmounts
     return () => {
       stopTimer();
     };
-  }, [user?.id]); // Added getUserAttempts, getUser to dependencies? No, they are stable refs from hook.
+  }, [user?.id, settings?.attempts_number]); // Depend on user ID and number of attempts setting
 
-  // Find the index of the best result (minimum difference)
+  // Find the index of the best result within the *currently displayed* attempts
+  // Find the index of the best result within the *original* attempts list (before reversing for display)
   const findBestResult = (attemptsData: Attempt[]) => {
-    if (attemptsData.length === 0) return;
+    if (attemptsData.length === 0) {
+      setBestResultIndex(null);
+      return;
+    }
 
     let minDiff = Number.MAX_VALUE;
-    let minIndex = -1;
+    let originalIndex = -1; // Index in the original (non-reversed) attempts array
 
-    // Find the index of the best result in the displayed attempts
-    const displayedAttempts = attemptsData.slice(-10);
-    displayedAttempts.forEach((attempt, index) => {
+    attemptsData.forEach((attempt, index) => {
       if (attempt.difference < minDiff) {
         minDiff = attempt.difference;
-        minIndex = index;
+        originalIndex = index;
       }
     });
 
-    if (minIndex !== -1) {
-      setBestResultIndex(minIndex);
+    if (originalIndex !== -1) {
+      // Store the index from the original array order
+      setBestResultIndex(originalIndex);
+    } else {
+      setBestResultIndex(null); // Reset if no minimum found (shouldn't happen if list not empty)
     }
   };
 
-  // Limit the display of attempts to the last 10
+  // REMOVED: attemptsToDisplay memo is no longer needed as limit is handled in getUserAttempts
+
+  // displayedAttempts now directly uses the 'attempts' state.
+  // The logic to clear/populate 'attempts' based on session state is handled
+  // during loadInitialData and handleAttempt.
   const displayedAttempts = useMemo(() => {
-    return attempts.slice(-10);
-  }, [attempts]);
+     // Ensure it's always an array for mapping
+     return Array.isArray(attempts) ? attempts : [];
+  }, [attempts]); // Depends only on the attempts state
+
+  // Re-calculate best result index whenever displayed attempts change
+  useEffect(() => {
+    // Only calculate if attempts are finished to highlight the best of the session
+    if (currentUser && currentUser.attempts_left <= 0) {
+        findBestResult(attempts); // Pass the limited attempts list
+    } else {
+        setBestResultIndex(null); // Clear highlight during active play
+    }
+  }, [attempts, currentUser?.attempts_left]); // Recalculate when attempts list or attempts_left changes
 
   // Effect to calculate cooldown end time based on user data for display purposes
   useEffect(() => {
@@ -144,14 +172,31 @@ const Game: React.FC = () => {
         `Difference: ${diff} ms. You earned ${smilesEarned} smiles!`
       );
 
-      const userAttempts = await getUserAttempts(user.id);
-      setAttempts(userAttempts);
+      // Determine if it was the start of a new session
+      const previousAttemptsLeft = currentUser?.attempts_left ?? 0; // Store attempts before the successful call
 
-      // Refresh user data from DB after successful attempt to get latest state
+      // Refresh user data from DB *after* successful attempt
       const updatedUser = (await getUser(user.id)) as User | null;
       if (updatedUser) {
-        setCurrentUser(updatedUser);
-        // REMOVED: checkCooldown(updatedUser); // Cooldown check is now handled by backend during recordAttempt call
+        setCurrentUser(updatedUser); // Update user state first
+
+        const attemptsLimit = settings?.attempts_number ?? 10;
+        const latestUserAttempts = await getUserAttempts(user.id, attemptsLimit); // Fetch latest attempts
+
+        // Check if a new session just started (attempts went from 0 to > 0)
+        const isNewSessionStart = previousAttemptsLeft <= 0 && updatedUser.attempts_left > 0;
+
+        if (isNewSessionStart) {
+          // If new session, show only the very last attempt (the first of this session)
+          // Since attempts are ordered DESC, the first element is the latest one.
+          setAttempts(latestUserAttempts.length > 0 ? [latestUserAttempts[0]] : []);
+        } else {
+          // If session continues, show the latest N attempts fetched.
+          // Calculate how many attempts have been made in this session
+          const attemptsMadeThisSession = attemptsLimit - updatedUser.attempts_left;
+          // Show only the attempts corresponding to this session
+          setAttempts(latestUserAttempts.slice(0, attemptsMadeThisSession));
+        }
 
         // Check if the user has run out of attempts AFTER this attempt
         if (updatedUser.attempts_left <= 0) {
@@ -161,7 +206,7 @@ const Game: React.FC = () => {
               totalSmiles
             )}`
           );
-          findBestResult(userAttempts); // Highlight best result now
+          // No need to call findBestResult here, useEffect handles it based on updated attempts/attempts_left
         }
       }
     } else if (supabaseError && supabaseError.includes("Cooldown active")) {
@@ -240,11 +285,16 @@ const Game: React.FC = () => {
             <tbody>
               {[...displayedAttempts].reverse().map((attempt, index) => (
                 <tr
-                  key={index}
+                  key={attempt.id} // Use attempt ID as key
                   className={
+                    // Highlight the best result row *after* attempts are finished
+                    // Note: 'index' here is from the *reversed* array (0 = oldest shown)
+                    // 'bestResultIndex' is the index in the *original* 'attempts' array (0 = newest)
+                    // Convert bestResultIndex to the reversed index for comparison
                     currentUser.attempts_left <= 0 &&
-                    displayedAttempts.length - 1 - index === bestResultIndex
-                      ? "bg-green-700"
+                    bestResultIndex !== null &&
+                    index === (displayedAttempts.length - 1 - bestResultIndex)
+                      ? "bg-green-700" // Highlight row if indices match after conversion
                       : index % 2 === 0
                       ? "bg-gray-800"
                       : "bg-gray-700"

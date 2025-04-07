@@ -15,7 +15,7 @@ interface UseSupabaseReturn {
     difference: number,
     smilesEarned: number
   ) => Promise<boolean>; // Added smilesEarned param
-  getUserAttempts: (userId: string) => Promise<Attempt[]>;
+  getUserAttempts: (userId: string, limit: number) => Promise<Attempt[]>; // Added limit parameter
   getUser: (userId: string) => Promise<User | null>;
   // calculateDiscount removed
   resetUserAttempts: (userId: string) => Promise<boolean>;
@@ -90,9 +90,11 @@ export const useSupabase = (): UseSupabaseReturn => {
   // Removed calculateBestResult and calculateDiscount functions
 
   /**
-   * Gets all attempts for a user.
+   * Gets the last N attempts for a user.
+   * @param userId The user's ID.
+   * @param limit The maximum number of attempts to retrieve.
    */
-  const getUserAttempts = async (userId: string): Promise<Attempt[]> => {
+  const getUserAttempts = async (userId: string, limit: number): Promise<Attempt[]> => { // Added limit parameter
     try {
       setLoading(true);
       setError(null);
@@ -101,7 +103,8 @@ export const useSupabase = (): UseSupabaseReturn => {
         .from("attempts")
         .select("*")
         .eq("user_id", userId) // Assuming RLS allows this or it's called where user_id is known securely
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(limit); // Added limit to the query
 
       if (error) throw error;
 
