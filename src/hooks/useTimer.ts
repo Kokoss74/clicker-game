@@ -25,7 +25,7 @@ export const useTimer = (): UseTimerReturn => {
 
         setTime(`${hours}:${minutes}:${seconds}:${ms}`);
         setMilliseconds(now.getMilliseconds());
-      }, 10); // Обновляем каждые 10мс для более точного отображения
+      }, 10); // Update every 10ms for more accurate display
     } else if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;

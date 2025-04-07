@@ -12,8 +12,6 @@ export interface SmileRange {
   smiles: number; // Smiles awarded for this range
 }
 
-// Removed unused DiscountRange interface
-
 export interface Database {
   public: {
     Tables: {
@@ -24,9 +22,8 @@ export interface Database {
           phone: string;
           attempts_left: number;
           best_result: number | null;
-          // discount: number // Removed discount field
-          total_smiles: number; // Added total smiles field
-          last_attempt_at: string | null; // Added timestamp for last attempt
+          total_smiles: number;
+          last_attempt_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -35,7 +32,6 @@ export interface Database {
           phone: string;
           attempts_left?: number;
           best_result?: number | null;
-          // discount?: number // Removed discount field
           total_smiles?: number;
           last_attempt_at?: string | null;
           created_at?: string;
@@ -46,7 +42,6 @@ export interface Database {
           phone?: string;
           attempts_left?: number;
           best_result?: number | null;
-          // discount?: number // Removed discount field
           total_smiles?: number;
           last_attempt_at?: string | null;
           created_at?: string;
@@ -76,23 +71,20 @@ export interface Database {
         Row: {
           id: number;
           attempts_number: number;
-          smile_ranges: SmileRange[] | null; // Added smile ranges field, allow null if not set
-          cooldown_minutes: number | null; // Added cooldown duration in minutes
-          // discount_ranges: DiscountRange[] // Removed discount ranges
+          smile_ranges: SmileRange[] | null;
+          cooldown_minutes: number | null;
         };
         Insert: {
           id?: number;
           attempts_number?: number;
           smile_ranges?: SmileRange[] | null;
           cooldown_minutes?: number | null;
-          // discount_ranges?: DiscountRange[] // Removed discount ranges
         };
         Update: {
           id?: number;
           attempts_number?: number;
           smile_ranges?: SmileRange[] | null;
           cooldown_minutes?: number | null;
-          // discount_ranges?: DiscountRange[] // Removed discount ranges
         };
       };
       admins: {

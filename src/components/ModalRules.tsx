@@ -1,7 +1,6 @@
 import React from "react";
 import Modal from "react-modal";
-import { useGameStore } from "../store/game"; // Import game store to access settings
-// import { SmileRange } from '../lib/database.types'; // Type is inferred from store
+import { useGameStore } from "../store/game";
 
 // Set the app element for accessibility
 Modal.setAppElement("#root");
@@ -13,9 +12,9 @@ interface ModalRulesProps {
 
 const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
   const { getSmileRanges, getCooldownMinutes, settings } = useGameStore(); // Get helpers and settings
-  const smileRanges = getSmileRanges(); // Get current smile ranges
-  const cooldownMinutes = getCooldownMinutes(); // Get current cooldown
-  const attemptsPerSession = settings?.attempts_number ?? 10; // Get attempts number
+  const smileRanges = getSmileRanges();
+  const cooldownMinutes = getCooldownMinutes();
+  const attemptsPerSession = settings?.attempts_number ?? 10;
 
   return (
     <Modal
@@ -101,9 +100,11 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
                     {" "}
                     {/* Centered text */}
                     {/* Corrected Range Display Logic */}
-                    {range.min === 0 && range.max === 0 ? '0' : ''}
-                    {range.min > 0 && range.max !== null ? `${range.min} – ${range.max}` : ''}
-                    {range.max === null ? `${range.min}+` : ''}
+                    {range.min === 0 && range.max === 0 ? "0" : ""}
+                    {range.min > 0 && range.max !== null
+                      ? `${range.min} – ${range.max}`
+                      : ""}
+                    {range.max === null ? `${range.min}+` : ""}
                   </td>
                   <td className="border border-gray-600 px-4 py-2 text-center">
                     {range.smiles}

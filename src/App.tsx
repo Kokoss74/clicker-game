@@ -8,7 +8,7 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "./store/auth";
-import { useGameStore } from "./store/game"; // Restored game store import
+import { useGameStore } from "./store/game";
 import Game from "./components/Game";
 
 function AuthForm() {

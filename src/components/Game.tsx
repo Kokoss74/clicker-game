@@ -12,7 +12,6 @@ import { formatRemainingCooldown } from "../utils/gameUtils";
 const Game: React.FC = () => {
   const { signOut } = useAuthStore();
   const { settings } = useGameStore();
-  // Removed resetTimer as it's not needed for freeze effect
   const { time, milliseconds, startTimer, stopTimer } = useTimer();
   const {
     currentUser,
@@ -155,7 +154,6 @@ const Game: React.FC = () => {
           {/* Click Button */}
           <button
             onClick={handleButtonClick} // Use the handler that checks attempts first
-            // disabled={isGameButtonDisabled} // Button remains clickable
             className={`w-full py-4 rounded-lg text-xl font-bold transition-colors ${
               // Apply disabled styles based on game state, but keep clickable
               showButtonAsDisabled
@@ -204,8 +202,7 @@ const Game: React.FC = () => {
 
       {/* Footer */}
       <footer className="text-center text-gray-500 text-sm mt-10 pb-4">
-        Created by Pasha Feldman - Skilled Software Engineer with 3+ years of
-        experience and strong AI expertise.
+        Created by Pasha Feldman - Skilled Software Engineer
       </footer>
     </div>
   );

@@ -35,22 +35,22 @@ export const normalizePhone = (phone: string): string => {
 export const auth = {
   signUp: async ({ phone, name }: SignUpData) => {
     try {
-      // Проверяем формат телефона
+      // Validate phone format
       if (!phone.match(regexPhone)) {
-        throw new Error("Неверный формат телефона");
+        throw new Error("Invalid phone format");
       }
 
       // Нормализуем телефон
       const normalizedPhone = normalizePhone(phone);
 
-      // Проверяем существование пользователя
+      // Check if user exists
       const { count } = await supabase
         .from("users")
         .select("*", { count: "exact", head: true })
         .eq("phone", normalizedPhone);
 
       if (count && count > 0) {
-        throw new Error("Пользователь с таким телефоном уже существует");
+        throw new Error("User with this phone already exists");
       }
 
       const { data, error } = await supabase.auth.signUp({
@@ -73,9 +73,9 @@ export const auth = {
 
   signIn: async ({ phone }: SignInData) => {
     try {
-      // Проверяем формат телефона
+      // Validate phone format
       if (!phone.match(regexPhone)) {
-        throw new Error("Неверный формат телефона");
+        throw new Error("Invalid phone format");
       }
 
       // Нормализуем телефон

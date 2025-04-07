@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"; // Import useCallback
+import { useState, useCallback } from "react"; 
 import { supabase } from "../lib/supabase";
 import { toast } from "react-toastify";
 import { useGameStore } from "../store/game";
@@ -19,7 +19,7 @@ interface UseSupabaseReturn {
 export const useSupabase = (): UseSupabaseReturn => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const gameStore = useGameStore(); // Settings might be needed for reset
+  const gameStore = useGameStore(); 
 
   const recordAttempt = useCallback(
     async (userId: string, difference: number): Promise<boolean> => {

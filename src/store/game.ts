@@ -14,7 +14,6 @@ const defaultSmileRanges: SmileRange[] = [
   { min: 101, max: null, smiles: 3 }, // max: null represents infinity
 ];
 
-// Define default cooldown
 const defaultCooldownMinutes = 60;
 
 interface GameState {
