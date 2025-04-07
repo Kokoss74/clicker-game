@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import { useTimer } from "../hooks/useTimer";
 import { useSupabase } from "../hooks/useSupabase";
-import { useAuthStore } from "../store/auth";
+import { useAuthStore } from "../store/auth"; // Import signOut
 import { useGameStore } from "../store/game"; // Import game store
 import ModalRules from "./ModalRules";
 import { Database } from "../lib/database.types";
@@ -21,7 +21,7 @@ type User = Database["public"]["Tables"]["users"]["Row"] & {
 type Attempt = Database["public"]["Tables"]["attempts"]["Row"];
 
 const Game: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user, signOut } = useAuthStore(); // Destructure signOut
   const { settings } = useGameStore(); // Get settings from game store
   const { time, milliseconds, startTimer, stopTimer, resetTimer } = useTimer();
   // Removed calculateDiscount. recordAttempt needs backend update.
@@ -203,6 +203,12 @@ const Game: React.FC = () => {
     startTimer();
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    // No need to redirect here, App.tsx handles rendering AuthForm when user is null
+    toast.info("You have been logged out.");
+  };
+
   if (!user || !currentUser) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -308,6 +314,14 @@ const Game: React.FC = () => {
           className="mt-6 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
         >
           Game Rules
+        </button>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleSignOut}
+          className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 rounded transition-colors text-white"
+        >
+          Logout
         </button>
       </div>
 
