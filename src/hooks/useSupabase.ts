@@ -26,8 +26,7 @@ export const useSupabase = (): UseSupabaseReturn => {
   const gameStore = useGameStore(); // Restored game store usage
 
   /**
-   * Records a new user attempt.
-   * TODO: Backend needs update to accept smiles, update total_smiles and last_attempt_at.
+   * Records a new user attempt by calling the backend function `record_attempt`.
    * @param userId The user's ID.
    * @param difference The time difference for the attempt.
    * @param smilesEarned The number of smiles earned for this attempt (will be passed to backend function).
@@ -142,8 +141,8 @@ export const useSupabase = (): UseSupabaseReturn => {
 
   /**
    * Resets user attempts and related stats.
-   * NOTE: This might become obsolete if backend handles reset automatically via cooldown logic.
-   * Kept for potential manual reset functionality.
+   * NOTE: This function might be used for manual admin resets or if the automatic
+   * cooldown reset logic on the backend needs a manual trigger in some cases.
    */
   const resetUserAttempts = async (userId: string): Promise<boolean> => {
     try {

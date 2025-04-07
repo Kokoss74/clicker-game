@@ -107,9 +107,12 @@ const Game: React.FC = () => {
         // Cooldown finished, backend should reset. Refresh user data.
         setCooldownActive(false);
         setCooldownEndTime(null);
-        // TODO: Trigger user data refresh here if backend doesn't push updates.
-        // Example: getUser(user.id).then(updated => setCurrentUser(updated as User));
-        // For now, assume getUser called later will fetch the reset state if backend handled it.
+        // Trigger user data refresh to check if backend reset attempts
+        if(user?.id) {
+          getUser(user.id).then(updated => {
+            if (updated) setCurrentUser(updated as User);
+          });
+        }
       }
     } else {
       setCooldownActive(false);
@@ -138,8 +141,12 @@ const Game: React.FC = () => {
       } else {
         // This case implies cooldown finished but backend hasn't reset yet, or no last_attempt_at field
         toast.info("Attempts finished. Waiting for reset or backend update.");
-        // Optionally trigger a manual refresh of user data here
-        // getUser(user.id).then(updated => setCurrentUser(updated as User));
+        // Trigger user data refresh to check if backend reset attempts
+         if(user?.id) {
+           getUser(user.id).then(updated => {
+             if (updated) setCurrentUser(updated as User);
+           });
+         }
       }
       return; // Stop attempt if no attempts left
     }
@@ -160,9 +167,8 @@ const Game: React.FC = () => {
     const diff: number =
       milliseconds < 500 ? milliseconds : 1000 - milliseconds;
     const smilesEarned = calculateSmiles(diff, settings?.smile_ranges); // Pass ranges
-    // TODO: Backend update needed for recordAttempt to accept smiles and update last_attempt_at/total_smiles.
-    // The hook currently expects 2 args. This will cause a TS error until the hook is updated.
-    // Passing smilesEarned as the third argument optimistically.
+    // Backend function 'record_attempt' is expected to handle attempt recording,
+    // stats updates (smiles, attempts_left, last_attempt_at, best_result), and cooldown logic.
     const success: boolean = await recordAttempt(user.id, diff, smilesEarned); // Pass smilesEarned to the updated hook
 
     if (success) {
@@ -174,7 +180,7 @@ const Game: React.FC = () => {
       const userAttempts = await getUserAttempts(user.id);
       setAttempts(userAttempts);
 
-      // Update user data (cast to include potential new fields)
+      // Refresh user data from DB after successful attempt to get latest state
       const updatedUser = (await getUser(user.id)) as User | null;
       if (updatedUser) {
         setCurrentUser(updatedUser);
