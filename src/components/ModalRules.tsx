@@ -100,22 +100,10 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
                   <td className="border border-gray-600 px-4 py-2 text-center">
                     {" "}
                     {/* Centered text */}
-                    {range.min}
-                    {/* Display range correctly: 0, 1-10, 11-50, 51-100, 101+ */}
-                    {range.max !== null && range.min !== range.max
-                      ? ` – ${range.max}`
-                      : ""}
-                    {range.max === null && range.min !== 0
-                      ? `${range.min}+`
-                      : ""}
-                    {range.max !== null &&
-                    range.min === range.max &&
-                    range.min === 0
-                      ? ""
-                      : ""}{" "}
-                    {/* Handle 0 case */}
-                    {range.max === null && range.min === 0 ? "0+" : ""}{" "}
-                    {/* Handle 0+ case if needed, though unlikely */}
+                    {/* Corrected Range Display Logic */}
+                    {range.min === 0 && range.max === 0 ? '0' : ''}
+                    {range.min > 0 && range.max !== null ? `${range.min} – ${range.max}` : ''}
+                    {range.max === null ? `${range.min}+` : ''}
                   </td>
                   <td className="border border-gray-600 px-4 py-2 text-center">
                     {range.smiles}
