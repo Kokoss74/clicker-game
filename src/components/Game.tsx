@@ -8,24 +8,28 @@ import ModalRules from "./ModalRules";
 import { Database } from "../lib/database.types";
 // Removed formatDiscount, will use gameUtils instead
 import {
-  calculateSmiles,
+  calculateSmiles, // Keep this for displaying smiles per attempt in table
   formatRemainingCooldown, // Restore this import
   generateSmileEmojis,
 } from "../utils/gameUtils";
 
-// Assume backend will add these fields. TODO: Update when DB schema changes.
+// Type User now reflects DB structure (total_smiles exists but holds smiles for best result)
 type User = Database["public"]["Tables"]["users"]["Row"] & {
-  last_attempt_at?: string | null; // Timestamp of the last attempt
-  total_smiles?: number; // Total smiles collected
+  last_attempt_at?: string | null;
+  // total_smiles field exists in DB, but represents smiles for best_result
 };
 type Attempt = Database["public"]["Tables"]["attempts"]["Row"];
 
 const Game: React.FC = () => {
   const { user, signOut } = useAuthStore(); // Destructure signOut
-  const { settings } = useGameStore(); // Get settings (getCooldownMinutes removed)
+  const { settings } = useGameStore(); // Get settings
   const { time, milliseconds, startTimer, stopTimer, resetTimer } = useTimer();
-  // Removed calculateDiscount. recordAttempt needs backend update.
-  const { recordAttempt, getUserAttempts, getUser, error: supabaseError } = useSupabase(); // Get error state from hook
+  const {
+    recordAttempt,
+    getUserAttempts,
+    getUser,
+    error: supabaseError,
+  } = useSupabase(); // Get error state from hook
 
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [showRules, setShowRules] = useState(false);
@@ -41,7 +45,6 @@ const Game: React.FC = () => {
 
     startTimer();
 
-    // Load user attempts when the component mounts
     // Load initial user data and potentially attempts from the current session
     const loadInitialData = async () => {
       // Get user data first
@@ -55,9 +58,13 @@ const Game: React.FC = () => {
       let userAttempts: Attempt[] = [];
       if (loadedUser.attempts_left > 0) {
         // Session is active, load attempts made in this session
-        const attemptsMadeThisSession = attemptsLimit - loadedUser.attempts_left;
+        const attemptsMadeThisSession =
+          attemptsLimit - loadedUser.attempts_left;
         if (attemptsMadeThisSession > 0) {
-          userAttempts = await getUserAttempts(user.id, attemptsMadeThisSession);
+          userAttempts = await getUserAttempts(
+            user.id,
+            attemptsMadeThisSession
+          );
         }
         // If attempts_left === attemptsLimit (start of session), userAttempts remains []
       } else {
@@ -75,7 +82,6 @@ const Game: React.FC = () => {
     };
   }, [user?.id, settings?.attempts_number]); // Depend on user ID and number of attempts setting
 
-  // Find the index of the best result within the *currently displayed* attempts
   // Find the index of the best result within the *original* attempts list (before reversing for display)
   const findBestResult = (attemptsData: Attempt[]) => {
     if (attemptsData.length === 0) {
@@ -101,29 +107,31 @@ const Game: React.FC = () => {
     }
   };
 
-  // REMOVED: attemptsToDisplay memo is no longer needed as limit is handled in getUserAttempts
-
   // displayedAttempts now directly uses the 'attempts' state.
   // The logic to clear/populate 'attempts' based on session state is handled
   // during loadInitialData and handleAttempt.
   const displayedAttempts = useMemo(() => {
-     // Ensure it's always an array for mapping
-     return Array.isArray(attempts) ? attempts : [];
+    // Ensure it's always an array for mapping
+    return Array.isArray(attempts) ? attempts : [];
   }, [attempts]); // Depends only on the attempts state
 
   // Re-calculate best result index whenever displayed attempts change
   useEffect(() => {
     // Only calculate if attempts are finished to highlight the best of the session
     if (currentUser && currentUser.attempts_left <= 0) {
-        findBestResult(attempts); // Pass the limited attempts list
+      findBestResult(attempts); // Pass the limited attempts list
     } else {
-        setBestResultIndex(null); // Clear highlight during active play
+      setBestResultIndex(null); // Clear highlight during active play
     }
   }, [attempts, currentUser?.attempts_left]); // Recalculate when attempts list or attempts_left changes
 
   // Effect to calculate cooldown end time based on user data for display purposes
   useEffect(() => {
-    if (currentUser && currentUser.attempts_left <= 0 && currentUser.last_attempt_at) {
+    if (
+      currentUser &&
+      currentUser.attempts_left <= 0 &&
+      currentUser.last_attempt_at
+    ) {
       const lastAttemptTime = new Date(currentUser.last_attempt_at).getTime();
       // Use getCooldownMinutes from store, provide default if store/settings not loaded
       const cooldownMinutes = settings?.cooldown_minutes ?? 60;
@@ -161,16 +169,14 @@ const Game: React.FC = () => {
     // Calculate the difference from a whole second
     const diff: number =
       milliseconds < 500 ? milliseconds : 1000 - milliseconds;
-    const smilesEarned = calculateSmiles(diff, settings?.smile_ranges); // Pass ranges
+    // const smilesEarned = calculateSmiles(diff, settings?.smile_ranges); // Removed: Smiles are calculated and stored by backend now
     // Backend function 'record_attempt' is expected to handle attempt recording,
     // stats updates (smiles, attempts_left, last_attempt_at, best_result), and cooldown logic.
-    const success: boolean = await recordAttempt(user.id, diff, smilesEarned); // Pass smilesEarned to the updated hook
+    const success: boolean = await recordAttempt(user.id, diff); // Call backend function with difference only
 
     if (success) {
-      // Notify the user about the result
-      toast.success(
-        `Difference: ${diff} ms. You earned ${smilesEarned} smiles!`
-      );
+      // Notify the user about the result (difference only)
+      toast.success(`Difference: ${diff} ms.`);
 
       // Determine if it was the start of a new session
       const previousAttemptsLeft = currentUser?.attempts_left ?? 0; // Store attempts before the successful call
@@ -181,43 +187,57 @@ const Game: React.FC = () => {
         setCurrentUser(updatedUser); // Update user state first
 
         const attemptsLimit = settings?.attempts_number ?? 10;
-        const latestUserAttempts = await getUserAttempts(user.id, attemptsLimit); // Fetch latest attempts
+        const latestUserAttempts = await getUserAttempts(
+          user.id,
+          attemptsLimit
+        ); // Fetch latest attempts
 
         // Check if a new session just started (attempts went from 0 to > 0)
-        const isNewSessionStart = previousAttemptsLeft <= 0 && updatedUser.attempts_left > 0;
+        const isNewSessionStart =
+          previousAttemptsLeft <= 0 && updatedUser.attempts_left > 0;
 
         if (isNewSessionStart) {
           // If new session, show only the very last attempt (the first of this session)
           // Since attempts are ordered DESC, the first element is the latest one.
-          setAttempts(latestUserAttempts.length > 0 ? [latestUserAttempts[0]] : []);
+          setAttempts(
+            latestUserAttempts.length > 0 ? [latestUserAttempts[0]] : []
+          );
         } else {
           // If session continues, show the latest N attempts fetched.
           // Calculate how many attempts have been made in this session
-          const attemptsMadeThisSession = attemptsLimit - updatedUser.attempts_left;
+          const attemptsMadeThisSession =
+            attemptsLimit - updatedUser.attempts_left;
           // Show only the attempts corresponding to this session
           setAttempts(latestUserAttempts.slice(0, attemptsMadeThisSession));
         }
 
         // Check if the user has run out of attempts AFTER this attempt
         if (updatedUser.attempts_left <= 0) {
-          const totalSmiles = updatedUser.total_smiles ?? 0; // Use 0 if undefined from DB
+          // Show smiles corresponding to the best result of the session
+          const bestResultSmiles = updatedUser.total_smiles ?? 0; // total_smiles now stores smiles for best result
           toast.info(
-            `Thank you for playing! You collected ${totalSmiles} smiles! ${generateSmileEmojis(
-              totalSmiles
+            `Game finished! Your best result (${
+              updatedUser.best_result
+            } ms) earned you ${bestResultSmiles} smiles! ${generateSmileEmojis(
+              bestResultSmiles
             )}`
           );
           // No need to call findBestResult here, useEffect handles it based on updated attempts/attempts_left
         }
       }
     } else if (supabaseError && supabaseError.includes("Cooldown active")) {
-        // If recordAttempt failed specifically due to cooldown
-        if (cooldownEndTime) {
-             // Show the formatted remaining time
-             toast.warning(`Next game will be available ${formatRemainingCooldown(cooldownEndTime)}.`);
-        } else {
-             // Fallback message if cooldownEndTime couldn't be calculated
-             toast.warning("Cooldown active. Try again later.");
-        }
+      // If recordAttempt failed specifically due to cooldown
+      if (cooldownEndTime) {
+        // Show the formatted remaining time
+        toast.warning(
+          `Next game will be available ${formatRemainingCooldown(
+            cooldownEndTime
+          )}.`
+        );
+      } else {
+        // Fallback message if cooldownEndTime couldn't be calculated
+        toast.warning("Cooldown active. Try again later.");
+      }
     }
     // Other errors (like "No attempts left") are handled by toast in useSupabase hook
 
@@ -264,11 +284,12 @@ const Game: React.FC = () => {
           {currentUser.best_result !== null && (
             <p className="mb-2">Best Result: {currentUser.best_result} ms</p>
           )}
-          {/* Display total smiles if available and attempts are finished */}
+          {/* Display smiles for best result if available and attempts are finished */}
           {currentUser.attempts_left <= 0 &&
-            currentUser.total_smiles !== undefined && (
+            currentUser.total_smiles !== undefined && // Check if total_smiles exists
+            currentUser.best_result !== null && ( // Only show if there's a best result
               <p className="mt-2">
-                Total Smiles Collected: {currentUser.total_smiles}{" "}
+                Smiles for Best Result: {currentUser.total_smiles}{" "}
                 {generateSmileEmojis(currentUser.total_smiles)}
               </p>
             )}
@@ -293,7 +314,7 @@ const Game: React.FC = () => {
                     // Convert bestResultIndex to the reversed index for comparison
                     currentUser.attempts_left <= 0 &&
                     bestResultIndex !== null &&
-                    index === (displayedAttempts.length - 1 - bestResultIndex)
+                    index === displayedAttempts.length - 1 - bestResultIndex
                       ? "bg-green-700" // Highlight row if indices match after conversion
                       : index % 2 === 0
                       ? "bg-gray-800"
@@ -303,6 +324,7 @@ const Game: React.FC = () => {
                   <td className="p-2">{index + 1}</td>
                   <td className="p-2">{attempt.difference}</td>
                   <td className="p-2 text-center">
+                    {/* Calculate smiles for display based on current ranges */}
                     {calculateSmiles(
                       attempt.difference,
                       settings?.smile_ranges

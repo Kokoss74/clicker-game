@@ -12,9 +12,9 @@ interface UseSupabaseReturn {
   error: string | null;
   recordAttempt: (
     userId: string,
-    difference: number,
-    smilesEarned: number
-  ) => Promise<boolean>; // Added smilesEarned param
+    difference: number
+    // smilesEarned: number // Removed smilesEarned parameter
+  ) => Promise<boolean>;
   getUserAttempts: (userId: string, limit: number) => Promise<Attempt[]>; // Added limit parameter
   getUser: (userId: string) => Promise<User | null>;
   // calculateDiscount removed
@@ -28,18 +28,19 @@ export const useSupabase = (): UseSupabaseReturn => {
 
   /**
    * Records a new user attempt by calling the backend function `record_attempt`.
+   * The backend function now calculates smiles based on the best result.
    * @param userId The user's ID.
    * @param difference The time difference for the attempt.
-   * @param smilesEarned The number of smiles earned for this attempt (will be passed to backend function).
    */
   const recordAttempt = async (
     userId: string,
-    difference: number,
-    smilesEarned: number
+    difference: number
+    // smilesEarned: number // Removed smilesEarned parameter
   ): Promise<boolean> => {
     // Note: This function now expects the backend function `record_attempt` to handle
-    // decrementing attempts_left, updating total_smiles, last_attempt_at, best_result, and cooldown logic.
-    // The frontend only needs to call the function with the difference and smiles.
+    // decrementing attempts_left, updating total_smiles (based on best result),
+    // last_attempt_at, best_result, and cooldown logic.
+    // The frontend only needs to call the function with the difference.
     try {
       setLoading(true);
       setError(null);
@@ -47,7 +48,7 @@ export const useSupabase = (): UseSupabaseReturn => {
       // Call the database function directly
       const { data, error: rpcError } = await supabase.rpc("record_attempt", {
         difference_value: difference,
-        smiles_earned: smilesEarned,
+        // smiles_earned: smilesEarned, // Removed smilesEarned parameter
       });
 
       if (rpcError) throw rpcError;
@@ -94,7 +95,11 @@ export const useSupabase = (): UseSupabaseReturn => {
    * @param userId The user's ID.
    * @param limit The maximum number of attempts to retrieve.
    */
-  const getUserAttempts = async (userId: string, limit: number): Promise<Attempt[]> => { // Added limit parameter
+  const getUserAttempts = async (
+    userId: string,
+    limit: number
+  ): Promise<Attempt[]> => {
+    // Added limit parameter
     try {
       setLoading(true);
       setError(null);
@@ -167,7 +172,7 @@ export const useSupabase = (): UseSupabaseReturn => {
         .update({
           attempts_left: gameStore.settings?.attempts_number ?? 10, // Use settings from store instance
           best_result: null,
-          total_smiles: 0, // Reset total smiles
+          total_smiles: 0, // Reset total smiles (now represents smiles for best result)
           last_attempt_at: null, // Clear last attempt time
         })
         .eq("id", userId); // Assuming RLS allows this update
