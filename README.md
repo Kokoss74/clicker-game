@@ -1,88 +1,87 @@
 # Clicker Game
 
-## Обзор проекта
+## Project Overview
 
-Веб-приложение для игры в кликер, где пользователь должен нажать на кнопку максимально близко к целой секунде. Точность нажатия измеряется в миллисекундах, и на основе результата пользователь получает определенное количество улыбок от создателя игры.
+This is a web-based clicker game where the objective is to click a button as close as possible to a whole second mark (e.g., XX:XX:XX:000). The player's accuracy, measured in milliseconds difference from the whole second, determines the number of "smiles" 😊 awarded for their best attempt within a game session.
 
-### Целевая аудитория
-- Любые пользователи, проявившие интерес и получившие ссылку-приглашение
-- Потенциальные работодатели, просматривающие пет-проект в резюме
+## Features
 
-## Функциональные возможности
+*   **Real-time Timer:** Displays the current time with millisecond precision.
+*   **Click Button:** Allows the user to register their click time. Includes a 2-second cooldown after each click to prevent spamming.
+*   **Attempts System:** Each game session consists of a configurable number of attempts (default: 10).
+*   **Cooldown Period:** After exhausting all attempts in a session, a configurable cooldown period (default: 60 minutes) must pass before a new session can begin.
+*   **Results Table:** Displays the attempts made within the *current* game session, showing the difference (ms), smiles awarded for that specific attempt, and timestamp.
+*   **Best Result Highlighting:** After a session ends, the row corresponding to the best attempt (lowest difference) is highlighted.
+*   **Session Score:** The final score for a session is the number of smiles corresponding to the single best attempt made during that session (displayed after the session ends).
+*   **Game Rules:** A modal window explaining the game objective, rules, and smile calculation.
+*   **Authentication:** Users sign up and log in using their phone number (utilizing Supabase Auth with Email/Password provider behind the scenes).
+*   **Logout:** Users can log out to return to the login screen.
 
-### Пользовательский интерфейс и игровой процесс
-- Отображение текущего времени с точностью до миллисекунд
-- Игровая кнопка для фиксации времени с блокировкой на 2 сек после каждого нажатия
-- Таблица результатов с отображением попыток, времени нажатия, отклонения и количества улыбок
-- Правила игры в модальном окне
-- Контактные данные создателя (Pasha Feldman)
+## Tech Stack
 
-### Игровая логика
-- 10 попыток для каждого пользователя
-- После исчерпания 10 попыток, новый сет из 10 попыток становится доступен через 1 час
-- Автоматический сброс попыток в базе данных без сохранения истории сессий
-- Расчет количества улыбок на основе точности нажатия:
-  - 0 мс: 33 улыбки
-  - 1-10 мс: 15 улыбок
-  - 11-50 мс: 10 улыбок
-  - 51-100 мс: 5 улыбок
-  - >100 мс: 3 улыбки
+*   **Frontend:**
+    *   Vite + React + TypeScript
+    *   Tailwind CSS for styling
+    *   Zustand for state management (authentication, game settings)
+    *   React Toastify for notifications
+    *   React Modal for the rules dialog
+*   **Backend:**
+    *   Supabase
+        *   PostgreSQL Database for storing user data, attempts, and game settings.
+        *   Supabase Auth for user authentication.
+        *   Supabase Database Functions (PL/pgSQL) for core game logic (recording attempts, handling cooldowns, calculating best result smiles).
+        *   Row Level Security (RLS) for data protection.
 
-### Регистрация и вход
-- Форма регистрации с полями: имя, номер телефона
-- Вход по номеру телефона
-- Проверка наличия пользователя в базе
+## Getting Started
 
-## Технический стек
+### Prerequisites
 
-### Основной стек
-- **Supabase**:
-  - PostgreSQL для хранения данных
-  - Supabase Auth для управления аутентификацией
-  - Row Level Security (RLS)
-- **Фронтенд**:
-  - Vite + React + TypeScript
-  - Tailwind CSS
-  - React Router
-  - React Hook Form
-  - UI-библиотеки для модальных окон и уведомлений
-- **Дополнительные библиотеки**:
-  - date-fns
+*   Node.js (v18 or higher recommended)
+*   npm or yarn package manager
+*   A Supabase account and project
 
-## Установка и запуск
+### Installation
 
-### Требования
-- Node.js (версия 18 или выше)
-- npm или yarn
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    cd clicker-game
+    ```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
+3.  **Set up environment variables:**
+    *   Create a `.env` file in the root of the project.
+    *   Get your Supabase project URL and anon key from your Supabase project settings (Project Settings -> API).
+    *   Add the following lines to your `.env` file, replacing the placeholders:
+        ```dotenv
+        VITE_SUPABASE_URL=your_supabase_project_url
+        VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+        ```
+4.  **Set up Supabase Backend:**
+    *   Follow the instructions in the `supabase_setup.md` file to create the necessary tables, functions, policies, and triggers in your Supabase project.
 
-### Настройка переменных окружения
-Создайте файл `.env` в корне проекта и добавьте следующие переменные:
-```
-VITE_SUPABASE_URL=ваш_url_supabase
-VITE_SUPABASE_ANON_KEY=ваш_анонимный_ключ_supabase
-```
+### Running the Development Server
 
-### Запуск в режиме разработки
 ```bash
 npm run dev
-# или
+# or
 yarn dev
 ```
+This will start the Vite development server, typically available at `http://localhost:5173`.
 
-### Сборка для продакшена
+### Building for Production
+
 ```bash
 npm run build
-# или
+# or
 yarn build
 ```
+This command builds the application for production in the `dist` folder.
 
-## Безопасность
-- Аутентификация через Supabase Auth
-- Защита от автокликеров (блокировка кнопки на 2 сек)
-- Безопасное хранение и передача данных через HTTPS
+## Author
 
-## Локализация
-- Интерфейс игры на английском языке
-
-## О создателе
-Pasha Feldman - Skilled Software Engineer with 3+ years of experience and strong AI expertise, seeking a mid-level Full Stack Developer role.
+Created by Pasha Feldman - Skilled Software Engineer with 3+ years of experience and strong AI expertise.
