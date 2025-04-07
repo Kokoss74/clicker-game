@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .vscodecounter
+README_old.md
 
 # Editor directories and files
 .vscode/*

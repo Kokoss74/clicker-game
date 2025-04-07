@@ -5,7 +5,6 @@ import 'react-toastify/dist/ReactToastify.css'
 import { useAuthStore } from './store/auth'
 import { useGameStore } from './store/game'
 import Game from './components/Game'
-import AdminPanel from './components/AdminPanel'
 
 function AuthForm() {
   const { signIn, signUp, error } = useAuthStore();
@@ -147,7 +146,6 @@ function App() {
         ) : (
           <Routes>
             <Route path="/" element={<Game />} />
-            <Route path="/admin" element={<AdminPanel />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         )}
