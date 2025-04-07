@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from "./supabase";
 const regexPhone = /^(?:\+972|0)-?(?:[5789]\d)-?\d{3}-?\d{4}$/;
 
 export interface SignUpData {
@@ -16,20 +16,20 @@ export interface SignInData {
  */
 export const normalizePhone = (phone: string): string => {
   // Remove all non-digit characters
-  const digitsOnly = phone.replace(/\D/g, '');
-  
+  const digitsOnly = phone.replace(/\D/g, "");
+
   // If starts with 0, replace with 972
-  if (digitsOnly.startsWith('0')) {
-    return '972' + digitsOnly.substring(1);
+  if (digitsOnly.startsWith("0")) {
+    return "972" + digitsOnly.substring(1);
   }
-  
+
   // If already starts with 972, return as is
-  if (digitsOnly.startsWith('972')) {
+  if (digitsOnly.startsWith("972")) {
     return digitsOnly;
   }
-  
+
   // Otherwise assume it's a local number without prefix
-  return '972' + digitsOnly;
+  return "972" + digitsOnly;
 };
 
 export const auth = {
@@ -37,7 +37,7 @@ export const auth = {
     try {
       // Проверяем формат телефона
       if (!phone.match(regexPhone)) {
-        throw new Error('Неверный формат телефона');
+        throw new Error("Неверный формат телефона");
       }
 
       // Нормализуем телефон
@@ -45,14 +45,14 @@ export const auth = {
 
       // Проверяем существование пользователя
       const { count } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true })
-        .eq('phone', normalizedPhone);
+        .from("users")
+        .select("*", { count: "exact", head: true })
+        .eq("phone", normalizedPhone);
 
       if (count && count > 0) {
-        throw new Error('Пользователь с таким телефоном уже существует');
+        throw new Error("Пользователь с таким телефоном уже существует");
       }
-      
+
       const { data, error } = await supabase.auth.signUp({
         email: `${normalizedPhone}@user.com`,
         password: `${normalizedPhone}#Pwd123`,
@@ -75,7 +75,7 @@ export const auth = {
     try {
       // Проверяем формат телефона
       if (!phone.match(regexPhone)) {
-        throw new Error('Неверный формат телефона');
+        throw new Error("Неверный формат телефона");
       }
 
       // Нормализуем телефон
@@ -105,7 +105,10 @@ export const auth = {
 
   getSession: async () => {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
       if (error) throw error;
       return { session, error: null };
     } catch (error) {
