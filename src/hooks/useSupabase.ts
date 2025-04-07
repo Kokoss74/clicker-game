@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import { toast } from "react-toastify"; // Import toast
 import { useGameStore } from "../store/game"; // Restored game store import
 import { Database } from "../lib/database.types";
 
@@ -65,12 +66,20 @@ export const useSupabase = (): UseSupabaseReturn => {
       // Log the error for debugging
       console.error("Error recording attempt:", error);
       // Set a user-friendly error message
-      if ((error as Error).message.includes("Cooldown active")) {
+      // Get the error message
+      const errorMessage = (error as Error).message;
+
+      // Set error state based on the message
+      // Do not show toast for "Cooldown active" here, let the component handle it
+      if (errorMessage.includes("Cooldown active")) {
         setError("Cooldown active. Try again later.");
-      } else if ((error as Error).message.includes("No attempts left")) {
+      } else if (errorMessage.includes("No attempts left")) {
+        toast.error("No attempts left."); // Show toast for no attempts
         setError("No attempts left.");
       } else {
-        setError(`Failed to record attempt: ${(error as Error).message}`);
+        // Generic error toast for other unexpected issues
+        toast.error(`Failed to record attempt: ${errorMessage}`);
+        setError(`Failed to record attempt: ${errorMessage}`);
       }
       return false;
     } finally {

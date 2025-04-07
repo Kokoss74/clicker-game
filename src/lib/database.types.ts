@@ -77,18 +77,21 @@ export interface Database {
           id: number;
           attempts_number: number;
           smile_ranges: SmileRange[] | null; // Added smile ranges field, allow null if not set
+          cooldown_minutes: number | null; // Added cooldown duration in minutes
           // discount_ranges: DiscountRange[] // Removed discount ranges
         };
         Insert: {
           id?: number;
           attempts_number?: number;
           smile_ranges?: SmileRange[] | null;
+          cooldown_minutes?: number | null;
           // discount_ranges?: DiscountRange[] // Removed discount ranges
         };
         Update: {
           id?: number;
           attempts_number?: number;
           smile_ranges?: SmileRange[] | null;
+          cooldown_minutes?: number | null;
           // discount_ranges?: DiscountRange[] // Removed discount ranges
         };
       };

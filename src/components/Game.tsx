@@ -2,14 +2,14 @@ import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import { useTimer } from "../hooks/useTimer";
 import { useSupabase } from "../hooks/useSupabase";
-import { useAuthStore } from "../store/auth"; // Import signOut
-import { useGameStore } from "../store/game"; // Import game store
+import { useAuthStore } from "../store/auth";
+import { useGameStore } from "../store/game"; // Import game store and helpers
 import ModalRules from "./ModalRules";
 import { Database } from "../lib/database.types";
 // Removed formatDiscount, will use gameUtils instead
 import {
   calculateSmiles,
-  formatRemainingCooldown,
+  formatRemainingCooldown, // Restore this import
   generateSmileEmojis,
 } from "../utils/gameUtils";
 
@@ -22,17 +22,17 @@ type Attempt = Database["public"]["Tables"]["attempts"]["Row"];
 
 const Game: React.FC = () => {
   const { user, signOut } = useAuthStore(); // Destructure signOut
-  const { settings } = useGameStore(); // Get settings from game store
+  const { settings } = useGameStore(); // Get settings (getCooldownMinutes removed)
   const { time, milliseconds, startTimer, stopTimer, resetTimer } = useTimer();
   // Removed calculateDiscount. recordAttempt needs backend update.
-  const { recordAttempt, getUserAttempts, getUser } = useSupabase();
+  const { recordAttempt, getUserAttempts, getUser, error: supabaseError } = useSupabase(); // Get error state from hook
 
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [showRules, setShowRules] = useState(false);
   const [bestResultIndex, setBestResultIndex] = useState<number | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(user);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [cooldownActive, setCooldownActive] = useState(false);
+  // Restore state for cooldown end time to display message
   const [cooldownEndTime, setCooldownEndTime] = useState<number | null>(null);
 
   // Start the timer when the component loads
@@ -93,63 +93,30 @@ const Game: React.FC = () => {
     return attempts.slice(-10);
   }, [attempts]);
 
-  // Function to check and set cooldown state
-  const checkCooldown = (userData: User | null) => {
-    if (userData && userData.attempts_left <= 0 && userData.last_attempt_at) {
-      const lastAttemptTime = new Date(userData.last_attempt_at).getTime();
-      const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
-      const cooldownEnds = lastAttemptTime + oneHour;
-
-      if (Date.now() < cooldownEnds) {
-        setCooldownActive(true);
-        setCooldownEndTime(cooldownEnds);
+  // Effect to calculate cooldown end time based on user data for display purposes
+  useEffect(() => {
+    if (currentUser && currentUser.attempts_left <= 0 && currentUser.last_attempt_at) {
+      const lastAttemptTime = new Date(currentUser.last_attempt_at).getTime();
+      // Use getCooldownMinutes from store, provide default if store/settings not loaded
+      const cooldownMinutes = settings?.cooldown_minutes ?? 60;
+      const cooldownMilliseconds = cooldownMinutes * 60 * 1000;
+      const endTime = lastAttemptTime + cooldownMilliseconds;
+      // Only set if the cooldown should still be active
+      if (Date.now() < endTime) {
+        setCooldownEndTime(endTime);
       } else {
-        // Cooldown finished, backend should reset. Refresh user data.
-        setCooldownActive(false);
-        setCooldownEndTime(null);
-        // Trigger user data refresh to check if backend reset attempts
-        if(user?.id) {
-          getUser(user.id).then(updated => {
-            if (updated) setCurrentUser(updated as User);
-          });
-        }
+        setCooldownEndTime(null); // Cooldown has passed
       }
     } else {
-      setCooldownActive(false);
-      setCooldownEndTime(null);
+      setCooldownEndTime(null); // No cooldown active
     }
-  };
-
-  // Check cooldown whenever relevant user data might change, and on initial load
-  useEffect(() => {
-    checkCooldown(currentUser);
-  }, [currentUser]); // Check whenever currentUser object changes
+  }, [currentUser, settings]); // Recalculate if user data or settings change
 
   const handleAttempt = async () => {
     if (!user || !currentUser) return;
 
-    // Check cooldown first if attempts are zero
-    if (currentUser.attempts_left <= 0) {
-      // Re-check cooldown state just before showing message
-      checkCooldown(currentUser);
-      if (cooldownActive && cooldownEndTime) {
-        toast.warning(
-          `Next game will be available ${formatRemainingCooldown(
-            cooldownEndTime
-          )}.`
-        );
-      } else {
-        // This case implies cooldown finished but backend hasn't reset yet, or no last_attempt_at field
-        toast.info("Attempts finished. Waiting for reset or backend update.");
-        // Trigger user data refresh to check if backend reset attempts
-         if(user?.id) {
-           getUser(user.id).then(updated => {
-             if (updated) setCurrentUser(updated as User);
-           });
-         }
-      }
-      return; // Stop attempt if no attempts left
-    }
+    // REMOVED: Frontend check for attempts_left <= 0.
+    // Backend function 'record_attempt' will now handle this check and cooldown logic.
 
     // Check if button is manually disabled (e.g., during the 2-second wait)
 
@@ -184,7 +151,7 @@ const Game: React.FC = () => {
       const updatedUser = (await getUser(user.id)) as User | null;
       if (updatedUser) {
         setCurrentUser(updatedUser);
-        checkCooldown(updatedUser); // Re-check cooldown after attempt updates user data
+        // REMOVED: checkCooldown(updatedUser); // Cooldown check is now handled by backend during recordAttempt call
 
         // Check if the user has run out of attempts AFTER this attempt
         if (updatedUser.attempts_left <= 0) {
@@ -197,7 +164,17 @@ const Game: React.FC = () => {
           findBestResult(userAttempts); // Highlight best result now
         }
       }
+    } else if (supabaseError && supabaseError.includes("Cooldown active")) {
+        // If recordAttempt failed specifically due to cooldown
+        if (cooldownEndTime) {
+             // Show the formatted remaining time
+             toast.warning(`Next game will be available ${formatRemainingCooldown(cooldownEndTime)}.`);
+        } else {
+             // Fallback message if cooldownEndTime couldn't be calculated
+             toast.warning("Cooldown active. Try again later.");
+        }
     }
+    // Other errors (like "No attempts left") are handled by toast in useSupabase hook
 
     resetTimer();
     startTimer();
@@ -228,7 +205,7 @@ const Game: React.FC = () => {
           onClick={handleAttempt}
           className={`w-full py-4 rounded-lg text-xl font-bold transition-colors ${
             isButtonDisabled ||
-            cooldownActive ||
+            // cooldownActive || // Removed frontend cooldown check from condition
             (currentUser && currentUser.attempts_left <= 0)
               ? "bg-gray-600 cursor-not-allowed" // Disabled if waiting, cooldown active, or no attempts left
               : "bg-blue-600 hover:bg-blue-700"
