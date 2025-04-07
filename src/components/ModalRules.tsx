@@ -12,8 +12,10 @@ interface ModalRulesProps {
 }
 
 const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
-  const { getSmileRanges } = useGameStore(); // Get helper function from store
-  const smileRanges = getSmileRanges(); // Get current smile ranges (or default)
+  const { getSmileRanges, getCooldownMinutes, settings } = useGameStore(); // Get helpers and settings
+  const smileRanges = getSmileRanges(); // Get current smile ranges
+  const cooldownMinutes = getCooldownMinutes(); // Get current cooldown
+  const attemptsPerSession = settings?.attempts_number ?? 10; // Get attempts number
 
   return (
     <Modal
@@ -34,8 +36,9 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
           </h3>{" "}
           {/* Colored subheading */}
           <p>
-            The goal is to collect as many smiles as possible by clicking the
-            button as close to a whole second as you can.
+            The goal is to get the best possible click accuracy (closest to 0ms
+            difference from a whole second). Your final score for the session is
+            the number of smiles corresponding to your single best attempt.
           </p>
         </div>
         <div className="mb-4">
@@ -57,12 +60,14 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
               auto-clicking.
             </li>
             <li>
-              You have 10 attempts per session. After using all attempts, your
-              total smiles for the session will be shown.
+              You have {attemptsPerSession} attempts per session. After using
+              all attempts, the smiles awarded for your best attempt will be
+              shown.
             </li>
             <li>
-              A new session of 10 attempts becomes available 1 hour after your
-              last attempt of the previous session.
+              A new session of {attemptsPerSession} attempts becomes available{" "}
+              {cooldownMinutes} minute(s) after your last attempt of the
+              previous session.
             </li>
           </ol>
         </div>
@@ -72,8 +77,8 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
           </h3>{" "}
           {/* Colored subheading */}
           <p className="mb-2">
-            The number of smiles earned per attempt depends on your accuracy
-            (the difference from a whole second):
+            The number of smiles awarded for an attempt depends on its accuracy
+            (lower difference is better):
           </p>
           <table className="w-full border-collapse border border-gray-600">
             <thead>
@@ -87,7 +92,7 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
             <tbody>
               {smileRanges.map((range, index) => (
                 <tr
-                  key={index}
+                  key={range.min} // Use min as key, assuming ranges are stable
                   className={index % 2 === 0 ? "bg-gray-700" : "bg-gray-800"}
                 >
                   {" "}
@@ -120,18 +125,7 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
             </tbody>
           </table>
         </div>
-        <div className="mt-6 pt-4 border-t border-gray-700">
-          <h3 className="text-lg font-semibold mb-2 text-blue-200">
-            About the Creator:
-          </h3>{" "}
-          {/* Colored subheading */}
-          <p>
-            Pasha Feldman - Skilled Software Engineer with 3+ years of
-            experience and strong AI expertise, seeking a mid-level Full Stack
-            Developer role.
-          </p>
-          {/* Add contact links if available, e.g., LinkedIn, GitHub */}
-        </div>
+        {/* Removed "About the Creator" section */}
         <button
           onClick={onRequestClose}
           className="mt-6 w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400" // Added focus style

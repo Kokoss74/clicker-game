@@ -8,7 +8,7 @@ import ModalRules from "./ModalRules";
 import { Database } from "../lib/database.types";
 // Removed formatDiscount, will use gameUtils instead
 import {
-  calculateSmiles, // Keep this for displaying smiles per attempt in table
+  calculateSmiles,
   formatRemainingCooldown, // Restore this import
   generateSmileEmojis,
 } from "../utils/gameUtils";
@@ -260,124 +260,143 @@ const Game: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      <h1 className="text-3xl font-bold text-center mb-8">Clicker Game</h1>
+    <div className="min-h-screen bg-gray-900 text-white p-4 flex flex-col">
+      {" "}
+      {/* Added flex flex-col */}
+      <div className="flex-grow">
+        {" "}
+        {/* Added flex-grow to push footer down */}
+        <h1 className="text-3xl font-bold text-center mb-8">Clicker Game</h1>
+        <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="timer text-4xl font-mono mb-6 text-center">
+            {time}
+          </div>
 
-      <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
-        <div className="timer text-4xl font-mono mb-6 text-center">{time}</div>
+          <button
+            onClick={handleAttempt}
+            className={`w-full py-4 rounded-lg text-xl font-bold transition-colors ${
+              isButtonDisabled ||
+              // cooldownActive || // Removed frontend cooldown check from condition
+              (currentUser && currentUser.attempts_left <= 0)
+                ? "bg-gray-600 cursor-not-allowed" // Disabled if waiting, cooldown active, or no attempts left
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            Click Me!
+          </button>
 
-        <button
-          onClick={handleAttempt}
-          className={`w-full py-4 rounded-lg text-xl font-bold transition-colors ${
-            isButtonDisabled ||
-            // cooldownActive || // Removed frontend cooldown check from condition
-            (currentUser && currentUser.attempts_left <= 0)
-              ? "bg-gray-600 cursor-not-allowed" // Disabled if waiting, cooldown active, or no attempts left
-              : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          Click Me!
-        </button>
-
-        <div className="mt-6">
-          <p className="mb-2">Attempts left: {currentUser.attempts_left}</p>
-          {currentUser.best_result !== null && (
-            <p className="mb-2">Best Result: {currentUser.best_result} ms</p>
-          )}
-          {/* Display smiles for best result if available and attempts are finished */}
-          {currentUser.attempts_left <= 0 &&
-            currentUser.total_smiles !== undefined && // Check if total_smiles exists
-            currentUser.best_result !== null && ( // Only show if there's a best result
-              <p className="mt-2">
-                Smiles for Best Result: {currentUser.total_smiles}{" "}
-                {generateSmileEmojis(currentUser.total_smiles)}
-              </p>
+          <div className="mt-6">
+            <p className="mb-2">Attempts left: {currentUser.attempts_left}</p>
+            {currentUser.best_result !== null && (
+              <p className="mb-2">Best Result: {currentUser.best_result} ms</p>
             )}
-
-          <table className="w-full mt-4 border-collapse">
-            <thead>
-              <tr className="bg-gray-700">
-                <th className="p-2 text-left">#</th>
-                <th className="p-2 text-left">Difference (ms)</th>
-                <th className="p-2 text-left">Smiles 😊</th>
-                <th className="p-2 text-left">Date & Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...displayedAttempts].reverse().map((attempt, index) => (
-                <tr
-                  key={attempt.id} // Use attempt ID as key
-                  className={
-                    // Highlight the best result row *after* attempts are finished
-                    // Note: 'index' here is from the *reversed* array (0 = oldest shown)
-                    // 'bestResultIndex' is the index in the *original* 'attempts' array (0 = newest)
-                    // Convert bestResultIndex to the reversed index for comparison
-                    currentUser.attempts_left <= 0 &&
-                    bestResultIndex !== null &&
-                    index === displayedAttempts.length - 1 - bestResultIndex
-                      ? "bg-green-700" // Highlight row if indices match after conversion
-                      : index % 2 === 0
-                      ? "bg-gray-800"
-                      : "bg-gray-700"
-                  }
-                >
-                  <td className="p-2">{index + 1}</td>
-                  <td className="p-2">{attempt.difference}</td>
-                  <td className="p-2 text-center">
-                    {/* Calculate smiles for display based on current ranges */}
-                    {calculateSmiles(
-                      attempt.difference,
-                      settings?.smile_ranges
-                    )}
-                  </td>{" "}
-                  {/* Pass ranges */}
-                  <td className="p-2">
-                    {/* Using en-GB for DD/MM/YYYY format, adjust if needed */}
-                    {new Date(attempt.created_at).toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}{" "}
-                    {new Date(attempt.created_at).toLocaleTimeString("en-GB", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })}
-                  </td>
-                </tr>
-              ))}
-
-              {displayedAttempts.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="p-2 text-center">
-                    No attempts yet
-                  </td>
-                </tr>
+            {/* Display smiles for best result if available and attempts are finished */}
+            {currentUser.attempts_left <= 0 &&
+              currentUser.total_smiles !== undefined && // Check if total_smiles exists
+              currentUser.best_result !== null && ( // Only show if there's a best result
+                <p className="mt-2">
+                  Smiles for Best Result: {currentUser.total_smiles}{" "}
+                  {generateSmileEmojis(currentUser.total_smiles)}
+                </p>
               )}
-            </tbody>
-          </table>
+
+            <table className="w-full mt-4 border-collapse">
+              <thead>
+                <tr className="bg-gray-700">
+                  <th className="p-2 text-left">#</th>
+                  <th className="p-2 text-left">Difference (ms)</th>
+                  <th className="p-2 text-left">Smiles 😊</th>
+                  <th className="p-2 text-left">Date & Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...displayedAttempts].reverse().map((attempt, index) => (
+                  <tr
+                    key={attempt.id} // Use attempt ID as key
+                    className={
+                      // Highlight the best result row *after* attempts are finished
+                      // Note: 'index' here is from the *reversed* array (0 = oldest shown)
+                      // 'bestResultIndex' is the index in the *original* 'attempts' array (0 = newest)
+                      // Convert bestResultIndex to the reversed index for comparison
+                      currentUser.attempts_left <= 0 &&
+                      bestResultIndex !== null &&
+                      index === displayedAttempts.length - 1 - bestResultIndex
+                        ? "bg-green-700" // Highlight row if indices match after conversion
+                        : index % 2 === 0
+                        ? "bg-gray-800"
+                        : "bg-gray-700"
+                    }
+                  >
+                    <td className="p-2">{index + 1}</td>
+                    <td className="p-2">{attempt.difference}</td>
+                    <td className="p-2 text-center">
+                      {/* Calculate smiles for display based on current ranges */}
+                      {calculateSmiles(
+                        attempt.difference,
+                        settings?.smile_ranges
+                      )}
+                    </td>{" "}
+                    {/* Pass ranges */}
+                    <td className="p-2">
+                      {/* Using en-GB for DD/MM/YYYY format, adjust if needed */}
+                      {new Date(attempt.created_at).toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }
+                      )}{" "}
+                      {new Date(attempt.created_at).toLocaleTimeString(
+                        "en-GB",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        }
+                      )}
+                    </td>
+                  </tr>
+                ))}
+
+                {displayedAttempts.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-2 text-center">
+                      No attempts yet
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <button
+            onClick={() => setShowRules(true)}
+            className="mt-6 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+          >
+            Game Rules
+          </button>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleSignOut}
+            className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 rounded transition-colors text-white"
+          >
+            Logout
+          </button>
         </div>
-
-        <button
-          onClick={() => setShowRules(true)}
-          className="mt-6 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
-        >
-          Game Rules
-        </button>
-
-        {/* Logout Button */}
-        <button
-          onClick={handleSignOut}
-          className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 rounded transition-colors text-white"
-        >
-          Logout
-        </button>
-      </div>
-
-      <ModalRules
-        isOpen={showRules}
-        onRequestClose={() => setShowRules(false)}
-      />
+        <ModalRules
+          isOpen={showRules}
+          onRequestClose={() => setShowRules(false)}
+        />
+      </div>{" "}
+      {/* End flex-grow */}
+      {/* Footer */}
+      <footer className="text-center text-gray-500 text-sm mt-10 pb-4">
+        Created by Pasha Feldman - Skilled Software Engineer with 3+ years of
+        experience and strong AI expertise.
+        {/* Add links here if desired: e.g., <a href="..." target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">LinkedIn</a> */}
+      </footer>
     </div>
   );
 };
