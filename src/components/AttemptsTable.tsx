@@ -23,7 +23,7 @@ const AttemptsTable: React.FC<AttemptsTableProps> = ({
   return (
     <table className="w-full mt-4 border-collapse">
       <thead>
-        <tr className="bg-gray-700">
+        <tr className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white">
           <th className="p-2 text-left">#</th>
           <th className="p-2 text-left">Difference (ms)</th>
           <th className="p-2 text-left">Smiles 😊</th>
@@ -44,10 +44,10 @@ const AttemptsTable: React.FC<AttemptsTableProps> = ({
               key={attempt.id} // Use attempt ID as key
               className={
                 isBest
-                  ? "bg-green-700" // Highlight row if it's the best
+                  ? "bg-green-200 dark:bg-green-700" 
                   : index % 2 === 0
-                  ? "bg-gray-800"
-                  : "bg-gray-700"
+                  ? "bg-white dark:bg-gray-800" 
+                  : "bg-gray-50 dark:bg-gray-700" 
               }
             >
               <td className="p-2">{index + 1}</td>
@@ -75,7 +75,7 @@ const AttemptsTable: React.FC<AttemptsTableProps> = ({
 
         {displayedAttempts.length === 0 && (
           <tr>
-            <td colSpan={4} className="p-2 text-center">
+            <td colSpan={4} className="p-2 text-center text-gray-500 dark:text-gray-400">
               No attempts yet for this session.
             </td>
           </tr>

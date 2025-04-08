@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,15 +9,14 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "./store/auth";
 import { useGameStore } from "./store/game";
+import useTheme from "./hooks/useTheme";
 import Game from "./components/Game";
-import { Phone, UserPlus, LogIn, AlertTriangle, Loader, Gamepad2 } from "lucide-react"; // Import icons
+import { Phone, UserPlus, LogIn, AlertTriangle, Loader, Gamepad2, Sun, Moon } from "lucide-react";
 
-// Define props for AuthForm
 interface AuthFormProps {
   isLoading: boolean;
 }
 
-// Modified AuthForm to accept and use isLoading prop
 function AuthForm({ isLoading }: AuthFormProps) {
   const { signIn, signUp, error } = useAuthStore(); 
   const [isSignUp, setIsSignUp] = React.useState(false); // Initial mode is Sign In
@@ -41,7 +40,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
       // Clear local error if store error is cleared
       setLocalError(null);
     }
-  }, [error]); // Dependencies: store error
+  }, [error]); 
 
   // Clear local error on input change
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,22 +93,22 @@ function AuthForm({ isLoading }: AuthFormProps) {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg relative">
+    <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg relative text-gray-900 dark:text-white transition-colors duration-200">
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="absolute inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center rounded-lg z-10">
-          <Loader size={32} className="animate-spin text-white" />
+        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-900 bg-opacity-75 flex justify-center items-center rounded-lg z-10">
+          <Loader size={32} className="animate-spin text-gray-900 dark:text-white" />
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mb-4 text-center text-white flex items-center justify-center gap-2">
+      <h2 className="text-2xl font-bold mb-4 text-center flex items-center justify-center gap-2">
         {isSignUp ? "Sign Up" : "Sign In"}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Phone Input */}
         <div>
-          <label className="block text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
             Phone <Phone size={16} />
           </label>
           <input
@@ -117,8 +116,8 @@ function AuthForm({ isLoading }: AuthFormProps) {
             value={phone}
             onChange={handlePhoneChange}
             placeholder="Example: 050-1234567"
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-              isLoading ? "bg-gray-200 cursor-not-allowed" : ""
+            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 leading-tight focus:outline-none focus:shadow-outline ${
+              isLoading ? "bg-gray-100 dark:bg-gray-600 cursor-not-allowed" : ""
             }`}
             disabled={isLoading}
           />
@@ -127,7 +126,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
         {/* Name Input (only for Sign Up) */}
         {isSignUp && (
           <div>
-            <label className="block text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
+            <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
               Name
             </label>
             <input
@@ -135,8 +134,8 @@ function AuthForm({ isLoading }: AuthFormProps) {
               value={name}
               onChange={handleNameChange}
               placeholder="Your Name"
-              className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-                isLoading ? "bg-gray-200 cursor-not-allowed" : ""
+              className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 leading-tight focus:outline-none focus:shadow-outline ${
+                isLoading ? "bg-gray-100 dark:bg-gray-600 cursor-not-allowed" : ""
               }`}
               disabled={isLoading}
             />
@@ -146,7 +145,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
         {/* Submit Button */}
         <button
           type="submit"
-          className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center gap-2 ${
+          className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center gap-2 transition-opacity ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           disabled={isLoading}
@@ -166,7 +165,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
       {/* Toggle Mode Button */}
       <button
         onClick={handleToggleMode}
-        className={`mt-4 w-full text-center text-blue-400 hover:text-blue-300 flex items-center justify-center gap-1 ${
+        className={`mt-4 w-full text-center text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-center gap-1 transition-opacity ${
           isLoading ? "opacity-50 cursor-not-allowed" : ""
         }`}
         disabled={isLoading}
@@ -176,7 +175,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
 
       {/* Error Display Area */}
       {localError && (
-        <div className="mt-4 text-red-500 text-center flex items-center justify-center gap-1">
+        <div className="mt-4 text-red-600 dark:text-red-500 text-center flex items-center justify-center gap-1">
           <AlertTriangle size={16} />
           {localError}
         </div>
@@ -185,11 +184,23 @@ function AuthForm({ isLoading }: AuthFormProps) {
   );
 }
 
-// --- App Component ---
 function App() {
   const { user, loading: authLoading, checkUser } = useAuthStore();
   const { loadSettings, loading: settingsLoading } = useGameStore();
   const [initialized, setInitialized] = useState(false);
+  const { theme, setTheme } = useTheme(); 
+
+  // Determine the effective theme (light/dark) based on the current state ('light', 'dark', or 'system')
+  const effectiveTheme = useMemo(() => {
+    if (theme === 'system') {
+      // Check system preference only on client-side
+      if (typeof window !== 'undefined') {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      return 'light'; // Default to light during SSR or if window is undefined
+    }
+    return theme;
+  }, [theme]);
 
   // Effect for initial application load (check session, load settings)
   useEffect(() => {
@@ -208,9 +219,8 @@ function App() {
   // Render initial loading screen if not initialized or settings are loading
   if (isInitializing) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
-        <div className="text-xl flex items-center gap-2">
-          Loading...
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-xl flex items-center gap-2"> 
           <Loader size={24} className="animate-spin" />
         </div>
       </div>
@@ -220,17 +230,23 @@ function App() {
   // Once initialized, render the main application structure
   return (
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-      <div className="min-h-[100dvh] bg-gray-900 flex flex-col"> {/* Use dynamic viewport height */}
-        {/* Header */}
-        <header className="text-center py-4">
-          <h1 className="text-3xl font-bold text-white flex items-center justify-center gap-2">
+      <div className="min-h-[100dvh] flex flex-col"> 
+        <header className="text-center py-4 relative"> 
+          <h1 className="text-3xl font-bold flex items-center justify-center gap-2"> 
             Clicker Game
             <Gamepad2 size={30} />
           </h1>
+          <button
+            onClick={() => setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')}
+            className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            aria-label="Toggle theme"
+          >
+            {effectiveTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-grow flex flex-col justify-center items-center"> {/* Added flex-grow and centering */}
+        <main className="flex-grow flex flex-col justify-center items-center">
           {/* Conditionally render AuthForm or Game based on user state */}
         {!user ? (
           // Render AuthForm container
@@ -247,15 +263,14 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         )}
-        </main> {/* Close main content area */}
+        </main>
 
-        {/* Footer */}
-        <footer className="text-center text-gray-500 text-sm py-4">
+        <footer className="text-center text-gray-600 dark:text-gray-400 text-sm py-4">
           Created by Pasha Feldman - Skilled Software Engineer
         </footer>
 
         {/* Toast notifications container */}
-        <ToastContainer position="top-right" autoClose={3000} theme="dark" />
+        <ToastContainer position="top-right" autoClose={3000} theme={effectiveTheme} />
       </div>
     </Router>
   );

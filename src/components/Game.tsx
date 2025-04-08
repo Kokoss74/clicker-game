@@ -138,7 +138,7 @@ const Game: React.FC = () => {
   // Use initial loading state from the hook for the main loading screen
   if (isLoading || !currentUser) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
+      <div className="flex justify-center items-center h-screen">
         <div className="text-xl flex items-center gap-2">
           Loading Game...
           <Loader size={24} className="animate-spin" />
@@ -156,20 +156,20 @@ const Game: React.FC = () => {
       Date.now() < cooldownEndTime);
 
   return (
-    <div className="bg-gray-900 text-white p-4 flex flex-col">
+    <div className="p-4 flex flex-col">
       <div className="flex-grow">
 
-        <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
+        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-gray-900 dark:text-white transition-colors duration-200">
           {/* User Info, Logout, and Rules Button */}
           <div className="flex justify-between items-center mb-4"> 
             <div className="flex items-center gap-2"> 
-              <span className="text-gray-300">Gamer:</span>
+              <span className="text-gray-600 dark:text-gray-300">Gamer:</span>
               <span className="font-semibold">
                 {currentUser?.name}
               </span>
               <LogOut
                 size={20}
-                className="text-gray-400 hover:text-blue-500 cursor-pointer"
+                className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-500 cursor-pointer transition-colors" // Removed duplicate className
                 onClick={handleSignOut}
               />
             </div>
@@ -178,10 +178,10 @@ const Game: React.FC = () => {
                 console.log("Game: Opening rules modal.");
                 setShowRules(true);
               }}
-              className="py-1 px-3 bg-gray-700 hover:bg-gray-600 rounded transition-colors flex items-center gap-1 text-sm"
+              className="py-1 px-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition-colors flex items-center gap-1 text-sm text-gray-800 dark:text-white" // Removed duplicate className
             >
               Rules
-              <BookOpen size={16} /> 
+              <BookOpen size={16} />
             </button>
           </div>
           {/* Timer Display: Show frozen time if available, otherwise live time */}
@@ -192,13 +192,13 @@ const Game: React.FC = () => {
 
           {/* Click Button */}
           <button
-            onClick={handleButtonClick} // Use the handler that checks attempts first
-            className={`w-full py-4 rounded-lg text-xl font-bold transition-colors flex items-center justify-center gap-2 ${
+            onClick={handleButtonClick} 
+            className={`w-full py-4 rounded-lg text-xl font-bold transition-colors flex items-center justify-center gap-2 text-white ${ // Base text white for buttons
               // Apply disabled styles based on game state, but keep clickable
               showButtonAsDisabled
-                ? "bg-gray-600 cursor-not-allowed" // Style as disabled
-                : "bg-blue-600 hover:bg-blue-700" // Style as active
-            }`}
+                ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed" // Style as disabled (light/dark)
+                : "bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700" // Style as active (light/dark)
+            }`} 
           >
             {isSubmitting ? (
               <>
@@ -226,8 +226,6 @@ const Game: React.FC = () => {
             bestResultIndex={bestResultIndex}
             attemptsLeft={currentUser.attempts_left}
           />
-
-          {/* Rules Button - Moved to the top section */}
         </div>
 
         {/* Rules Modal */}
@@ -239,8 +237,6 @@ const Game: React.FC = () => {
           }}
         />
       </div>
-
-      {/* Footer */}
     </div>
   );
 };
