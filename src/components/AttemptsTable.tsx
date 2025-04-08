@@ -55,7 +55,7 @@ const AttemptsTable: React.FC<AttemptsTableProps> = ({
               <td className="p-2 text-center">
                 {/* Calculate smiles for display based on current ranges */}
                 {calculateSmiles(attempt.difference, smileRanges)}
-              </td>{" "}
+              </td>
               <td className="p-2">
                 {/* Using en-GB for DD/MM/YYYY format, adjust if needed */}
                 {new Date(attempt.created_at).toLocaleDateString("en-GB", {

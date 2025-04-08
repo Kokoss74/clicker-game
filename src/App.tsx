@@ -143,7 +143,7 @@ function App() {
   }
 
   return (
-    <Router>
+    <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <div className="min-h-screen bg-gray-900">
         {!user ? (
           <div className="flex justify-center items-center min-h-screen">
