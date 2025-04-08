@@ -45,9 +45,6 @@ const Game: React.FC = () => {
         return; // Only return if we are SURE cooldown is active
       } else {
         console.log("Game: Cooldown seems to be over, allowing attempt submission check."); // Logging cooldown potentially over
-        toast.info(
-          "No attempts left for this session. Click again to start new game if cooldown passed."
-        );
         // Allow click to proceed if cooldown might be over
       }
       // If cooldown seems over, let the handleAttemptSubmit call proceed below
