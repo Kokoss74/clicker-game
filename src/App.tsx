@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "./store/auth";
 import { useGameStore } from "./store/game";
 import Game from "./components/Game";
-import { Phone, UserPlus, LogIn, AlertTriangle, Loader } from "lucide-react"; // Import icons
+import { Phone, UserPlus, LogIn, AlertTriangle, Loader, Gamepad2 } from "lucide-react"; // Import icons
 
 // Define props for AuthForm
 interface AuthFormProps {
@@ -220,8 +220,18 @@ function App() {
   // Once initialized, render the main application structure
   return (
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-      <div className="min-h-screen bg-gray-900">
-        {/* Conditionally render AuthForm or Game based on user state */}
+      <div className="min-h-[100dvh] bg-gray-900 flex flex-col"> {/* Use dynamic viewport height */}
+        {/* Header */}
+        <header className="text-center py-4">
+          <h1 className="text-3xl font-bold text-white flex items-center justify-center gap-2">
+            Clicker Game
+            <Gamepad2 size={30} />
+          </h1>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-grow flex flex-col justify-center items-center"> {/* Added flex-grow and centering */}
+          {/* Conditionally render AuthForm or Game based on user state */}
         {!user ? (
           // Render AuthForm container
           <div className="flex justify-center items-center min-h-screen">
@@ -237,6 +247,13 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         )}
+        </main> {/* Close main content area */}
+
+        {/* Footer */}
+        <footer className="text-center text-gray-500 text-sm py-4">
+          Created by Pasha Feldman - Skilled Software Engineer
+        </footer>
+
         {/* Toast notifications container */}
         <ToastContainer position="top-right" autoClose={3000} theme="dark" />
       </div>

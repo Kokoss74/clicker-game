@@ -14,7 +14,6 @@ import {
   Loader,
   BookOpen,
   LogOut,
-  Gamepad2,
 } from "lucide-react"; 
 
 const Game: React.FC = () => {
@@ -159,10 +158,6 @@ const Game: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 flex flex-col">
       <div className="flex-grow">
-        <h1 className="text-3xl font-bold text-center mb-8 flex items-center justify-center gap-2">
-          Clicker Game
-          <Gamepad2 size={30} />
-        </h1>
 
         <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
           {/* Timer Display: Show frozen time if available, otherwise live time */}
@@ -241,9 +236,6 @@ const Game: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <footer className="text-center text-gray-500 text-sm mt-10 pb-4">
-        Created by Pasha Feldman - Skilled Software Engineer
-      </footer>
     </div>
   );
 };
