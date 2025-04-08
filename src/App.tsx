@@ -11,14 +11,24 @@ import { useAuthStore } from "./store/auth";
 import { useGameStore } from "./store/game";
 import useTheme from "./hooks/useTheme";
 import Game from "./components/Game";
-import { Phone, UserPlus, LogIn, AlertTriangle, Loader, Gamepad2, Sun, Moon } from "lucide-react";
+import {
+  Phone,
+  UserPlus,
+  LogIn,
+  AlertTriangle,
+  Loader,
+  Gamepad2,
+  Sun,
+  Moon,
+} from "lucide-react";
+import ParticlesBackground from "./components/ParticlesBackground";
 
 interface AuthFormProps {
   isLoading: boolean;
 }
 
 function AuthForm({ isLoading }: AuthFormProps) {
-  const { signIn, signUp, error } = useAuthStore(); 
+  const { signIn, signUp, error } = useAuthStore();
   const [isSignUp, setIsSignUp] = React.useState(false); // Initial mode is Sign In
   const [phone, setPhone] = React.useState("");
   const [name, setName] = React.useState("");
@@ -34,13 +44,13 @@ function AuthForm({ isLoading }: AuthFormProps) {
           "AuthForm Effect: Invalid credentials on Sign In, switching to Sign Up."
         );
         toast.error("User not registered. Please create an account.");
-        setIsSignUp(true); 
+        setIsSignUp(true);
       }
     } else {
       // Clear local error if store error is cleared
       setLocalError(null);
     }
-  }, [error]); 
+  }, [error]);
 
   // Clear local error on input change
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,10 +82,10 @@ function AuthForm({ isLoading }: AuthFormProps) {
         return; // Stop submission
       }
       console.log("AuthForm: Calling signUp with phone:", phone, "name:", name);
-      await signUp({ phone, name }); 
+      await signUp({ phone, name });
     } else {
       console.log("AuthForm: Calling signIn with phone:", phone);
-      await signIn({ phone }); 
+      await signIn({ phone });
     }
     console.log("AuthForm: Submit handler finished.");
   };
@@ -85,7 +95,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
     console.log(
       `AuthForm: Toggling form mode to ${!isSignUp ? "Sign Up" : "Sign In"}`
     );
-    setIsSignUp(!isSignUp); 
+    setIsSignUp(!isSignUp);
     setLocalError(null); // Clear error display on mode switch
     // Clear input fields on mode switch for better UX
     setPhone("");
@@ -97,7 +107,10 @@ function AuthForm({ isLoading }: AuthFormProps) {
       {/* Loading Overlay */}
       {isLoading && (
         <div className="absolute inset-0 bg-gray-200 dark:bg-gray-900 bg-opacity-75 flex justify-center items-center rounded-lg z-10">
-          <Loader size={32} className="animate-spin text-gray-900 dark:text-white" />
+          <Loader
+            size={32}
+            className="animate-spin text-gray-900 dark:text-white"
+          />
         </div>
       )}
 
@@ -135,7 +148,9 @@ function AuthForm({ isLoading }: AuthFormProps) {
               onChange={handleNameChange}
               placeholder="Your Name"
               className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 leading-tight focus:outline-none focus:shadow-outline ${
-                isLoading ? "bg-gray-100 dark:bg-gray-600 cursor-not-allowed" : ""
+                isLoading
+                  ? "bg-gray-100 dark:bg-gray-600 cursor-not-allowed"
+                  : ""
               }`}
               disabled={isLoading}
             />
@@ -188,16 +203,18 @@ function App() {
   const { user, loading: authLoading, checkUser } = useAuthStore();
   const { loadSettings, loading: settingsLoading } = useGameStore();
   const [initialized, setInitialized] = useState(false);
-  const { theme, setTheme } = useTheme(); 
+  const { theme, setTheme } = useTheme();
 
   // Determine the effective theme (light/dark) based on the current state ('light', 'dark', or 'system')
   const effectiveTheme = useMemo(() => {
-    if (theme === 'system') {
+    if (theme === "system") {
       // Check system preference only on client-side
-      if (typeof window !== 'undefined') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      if (typeof window !== "undefined") {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
       }
-      return 'light'; // Default to light during SSR or if window is undefined
+      return "light"; // Default to light during SSR or if window is undefined
     }
     return theme;
   }, [theme]);
@@ -211,7 +228,7 @@ function App() {
       console.log("App Init: Finished.");
     };
     init();
-  }, []); 
+  }, []);
 
   // Determine if the app is in the initial loading phase
   const isInitializing = !initialized || settingsLoading;
@@ -220,7 +237,7 @@ function App() {
   if (isInitializing) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-xl flex items-center gap-2"> 
+        <div className="text-xl flex items-center gap-2">
           <Loader size={24} className="animate-spin" />
         </div>
       </div>
@@ -230,17 +247,24 @@ function App() {
   // Once initialized, render the main application structure
   return (
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-      <div className="min-h-[100dvh] flex flex-col"> 
+      <ParticlesBackground effectiveTheme={effectiveTheme} />
+      <div className="min-h-[100dvh] flex flex-col relative z-10">
         <header className="text-center py-4">
           <h1 className="text-3xl font-bold flex items-center justify-center gap-2">
             <Gamepad2 size={30} />
             Clicker Game
             <button
-              onClick={() => setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')}
+              onClick={() =>
+                setTheme(effectiveTheme === "dark" ? "light" : "dark")
+              }
               className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               aria-label="Toggle theme"
             >
-              {effectiveTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              {effectiveTheme === "dark" ? (
+                <Sun size={20} />
+              ) : (
+                <Moon size={20} />
+              )}
             </button>
           </h1>
         </header>
@@ -248,21 +272,21 @@ function App() {
         {/* Main Content Area */}
         <main className="flex-grow flex flex-col justify-center items-center">
           {/* Conditionally render AuthForm or Game based on user state */}
-        {!user ? (
-          // Render AuthForm container
-          <div className="flex justify-center items-center">
-            {/* Pass the authLoading state to AuthForm */}
-            {/* This ensures AuthForm does not unmount during auth operations */}
-            <AuthForm isLoading={authLoading} />
-          </div>
-        ) : (
-          // Render Game routes if user is logged in
-          <Routes>
-            <Route path="/" element={<Game />} />{" "}
-            {/* Assume Game handles its own loading states if needed */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        )}
+          {!user ? (
+            // Render AuthForm container
+            <div className="flex justify-center items-center">
+              {/* Pass the authLoading state to AuthForm */}
+              {/* This ensures AuthForm does not unmount during auth operations */}
+              <AuthForm isLoading={authLoading} />
+            </div>
+          ) : (
+            // Render Game routes if user is logged in
+            <Routes>
+              <Route path="/" element={<Game />} />
+              {/* Assume Game handles its own loading states if needed */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          )}
         </main>
 
         <footer className="text-center text-gray-600 dark:text-gray-400 text-sm py-4">
@@ -270,11 +294,14 @@ function App() {
         </footer>
 
         {/* Toast notifications container */}
-        <ToastContainer position="top-right" autoClose={3000} theme={effectiveTheme} />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          theme={effectiveTheme}
+        />
       </div>
     </Router>
   );
 }
 
 export default App;
-

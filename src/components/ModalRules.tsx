@@ -22,8 +22,8 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       contentLabel="Game Rules"
-      className="max-w-2xl mx-auto mt-20 p-6 bg-white dark:bg-gray-900 rounded-lg shadow-lg max-h-[90vh] overflow-y-auto hidden-scrollbar border-2 border-blue-400 dark:border-blue-500 text-gray-900 dark:text-white transition-colors duration-200" // Removed misplaced comment
-      overlayClassName="fixed inset-0 bg-gray-500 dark:bg-black bg-opacity-75 flex items-center justify-center p-4 transition-colors duration-200"
+      className="max-w-2xl mx-auto mt-20 p-6 bg-white dark:bg-gray-900 rounded-lg shadow-lg max-h-[90vh] overflow-y-auto hidden-scrollbar border-2 border-blue-400 dark:border-blue-500 text-gray-900 dark:text-white transition-colors duration-200" 
+      overlayClassName="z-10 fixed inset-0 flex items-center justify-center p-4 transition-colors duration-200"
     >
       <div>
         <h2 className="text-2xl font-bold mb-4 text-center text-blue-600 dark:text-blue-300 flex items-center justify-center gap-2">
