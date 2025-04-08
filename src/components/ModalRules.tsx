@@ -27,12 +27,12 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
       <div className="text-white">
         <h2 className="text-2xl font-bold mb-4 text-center text-blue-300">
           Game Rules
-        </h2>{" "}
+        </h2>
         {/* Centered and colored title */}
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-blue-200">
             Objective:
-          </h3>{" "}
+          </h3>
           {/* Colored subheading */}
           <p>
             The goal is to get the best possible click accuracy (closest to 0ms
@@ -43,7 +43,7 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-blue-200">
             How to Play:
-          </h3>{" "}
+          </h3>
           {/* Colored subheading */}
           <ol className="list-decimal pl-5 space-y-2">
             <li>
@@ -64,7 +64,7 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
               shown.
             </li>
             <li>
-              A new session of {attemptsPerSession} attempts becomes available{" "}
+              A new session of {attemptsPerSession} attempts becomes available
               {cooldownMinutes} minute(s) after your last attempt of the
               previous session.
             </li>
@@ -73,7 +73,7 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-blue-200">
             Earning Smiles:
-          </h3>{" "}
+          </h3>
           {/* Colored subheading */}
           <p className="mb-2">
             The number of smiles awarded for an attempt depends on its accuracy
@@ -94,10 +94,8 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
                   key={range.min} // Use min as key, assuming ranges are stable
                   className={index % 2 === 0 ? "bg-gray-700" : "bg-gray-800"}
                 >
-                  {" "}
                   {/* Alternating row colors */}
                   <td className="border border-gray-600 px-4 py-2 text-center">
-                    {" "}
                     {/* Centered text */}
                     {/* Corrected Range Display Logic */}
                     {range.min === 0 && range.max === 0 ? "0" : ""}
