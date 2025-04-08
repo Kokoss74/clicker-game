@@ -162,7 +162,7 @@ const Game: React.FC = () => {
         <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
           {/* User Info and Logout */}
           <div className="flex justify-start items-center mb-4 gap-2">
-            <span>Gamer:</span>
+            <span className="text-gray-300">Gamer:</span>
             <span className="font-semibold">
               {currentUser?.name} 
             </span>
