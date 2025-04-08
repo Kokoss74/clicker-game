@@ -162,7 +162,7 @@ const Game: React.FC = () => {
   const showButtonAsDisabled =
     isClickDelayed ||
     isSubmitting ||
-    (currentUser && currentUser.attempts_left <= 0);
+    (currentUser.attempts_left <= 0 && cooldownEndTime && Date.now() < cooldownEndTime);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 flex flex-col">
