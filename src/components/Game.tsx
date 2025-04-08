@@ -160,17 +160,29 @@ const Game: React.FC = () => {
       <div className="flex-grow">
 
         <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
-          {/* User Info and Logout */}
-          <div className="flex justify-start items-center mb-4 gap-2">
-            <span className="text-gray-300">Gamer:</span>
-            <span className="font-semibold">
-              {currentUser?.name} 
-            </span>
-            <LogOut
-              size={20}
-              className="text-gray-400 hover:text-blue-500 cursor-pointer"
-              onClick={handleSignOut} 
-            />
+          {/* User Info, Logout, and Rules Button */}
+          <div className="flex justify-between items-center mb-4"> 
+            <div className="flex items-center gap-2"> 
+              <span className="text-gray-300">Gamer:</span>
+              <span className="font-semibold">
+                {currentUser?.name}
+              </span>
+              <LogOut
+                size={20}
+                className="text-gray-400 hover:text-blue-500 cursor-pointer"
+                onClick={handleSignOut}
+              />
+            </div>
+            <button
+              onClick={() => {
+                console.log("Game: Opening rules modal.");
+                setShowRules(true);
+              }}
+              className="py-1 px-3 bg-gray-700 hover:bg-gray-600 rounded transition-colors flex items-center gap-1 text-sm"
+            >
+              Rules
+              <BookOpen size={16} /> 
+            </button>
           </div>
           {/* Timer Display: Show frozen time if available, otherwise live time */}
           <div className="timer text-4xl font-mono mb-6 text-center flex items-center justify-center gap-2">
@@ -215,18 +227,7 @@ const Game: React.FC = () => {
             attemptsLeft={currentUser.attempts_left}
           />
 
-          {/* Rules Button */}
-          <button
-            onClick={() => {
-              console.log("Game: Opening rules modal."); 
-              setShowRules(true);
-            }}
-            className="mt-6 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors flex items-center justify-center gap-2" // Added flex, gap
-          >
-            Game Rules
-            <BookOpen size={18} /> 
-          </button>
-
+          {/* Rules Button - Moved to the top section */}
         </div>
 
         {/* Rules Modal */}
