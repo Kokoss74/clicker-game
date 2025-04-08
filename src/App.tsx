@@ -41,7 +41,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
       // Clear local error if store error is cleared
       setLocalError(null);
     }
-  }, [error, isSignUp]); // Dependencies: store error and local mode state
+  }, [error]); // Dependencies: store error
 
   // Clear local error on input change
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
