@@ -16,7 +16,7 @@
 
   #root {
     /* Apply theme colors and transitions directly to the root element */
-    @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200;
+    @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200;
     /* Ensure the root container also allows flex behavior if needed */
     display: flex;
     flex-direction: column;

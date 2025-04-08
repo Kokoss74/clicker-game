@@ -56,10 +56,12 @@ const GameStats: React.FC<GameStatsProps> = ({
         )}
 
       {/* Regular Stats */}
+      <div className="text-gray-600 dark:text-gray-300">
       <p className="mb-2">Attempts left: {currentUser.attempts_left}</p>
       {currentUser.best_result !== null && (
         <p className="mb-2">Best Result: {currentUser.best_result} ms</p>
       )}
+      </div>
     </div>
   );
 };
