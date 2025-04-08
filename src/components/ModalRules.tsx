@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "react-modal";
 import { useGameStore } from "../store/game";
+import { BookOpen, Target, Smile, X } from 'lucide-react'; // Import icons
 
 // Set the app element for accessibility
 Modal.setAppElement("#root");
@@ -25,13 +26,15 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
       overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4" // Added padding to overlay
     >
       <div className="text-white">
-        <h2 className="text-2xl font-bold mb-4 text-center text-blue-300">
+        <h2 className="text-2xl font-bold mb-4 text-center text-blue-300 flex items-center justify-center gap-2">
           Game Rules
+          <BookOpen size={24} /> {/* Icon added */}
         </h2>
         {/* Centered and colored title */}
         <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2 text-blue-200">
+          <h3 className="text-lg font-semibold mb-2 text-blue-200 flex items-center gap-1">
             Objective:
+            <Target size={18} /> {/* Icon added */}
           </h3>
           {/* Colored subheading */}
           <p>
@@ -71,8 +74,9 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
           </ol>
         </div>
         <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2 text-blue-200">
+          <h3 className="text-lg font-semibold mb-2 text-blue-200 flex items-center gap-1">
             Earning Smiles:
+            <Smile size={18} /> {/* Icon added */}
           </h3>
           {/* Colored subheading */}
           <p className="mb-2">
@@ -115,9 +119,10 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
         {/* Removed "About the Creator" section */}
         <button
           onClick={onRequestClose}
-          className="mt-6 w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400" // Added focus style
+          className="mt-6 w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center justify-center gap-2" // Added focus style and flex
         >
           Close
+          <X size={20} /> {/* Icon added */}
         </button>
       </div>
     </Modal>

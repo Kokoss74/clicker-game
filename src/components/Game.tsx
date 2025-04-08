@@ -8,6 +8,7 @@ import ModalRules from "./ModalRules";
 import GameStats from "./GameStats";
 import AttemptsTable from "./AttemptsTable";
 import { formatRemainingCooldown } from "../utils/gameUtils";
+import { Clock, MousePointerClick, Loader, BookOpen, LogOut, Gamepad2 } from 'lucide-react'; // Import icons
 
 const Game: React.FC = () => {
   const { signOut } = useAuthStore();
@@ -149,7 +150,10 @@ const Game: React.FC = () => {
     // Removed noisy rendering log
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
-        <div className="text-xl">Loading Game...</div>
+        <div className="text-xl flex items-center gap-2">
+            Loading Game...
+            <Loader size={24} className="animate-spin" /> {/* Icon added */}
+        </div>
       </div>
     );
   }
@@ -163,26 +167,33 @@ const Game: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 flex flex-col">
       <div className="flex-grow">
-        <h1 className="text-3xl font-bold text-center mb-8">Clicker Game</h1>
+        <h1 className="text-3xl font-bold text-center mb-8 flex items-center justify-center gap-2">
+            Clicker Game
+            <Gamepad2 size={30} /> {/* Icon added */}
+        </h1>
 
         <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
           {/* Timer Display: Show frozen time if available, otherwise live time */}
-          <div className="timer text-4xl font-mono mb-6 text-center">
+          <div className="timer text-4xl font-mono mb-6 text-center flex items-center justify-center gap-2">
+            <Clock size={36} /> {/* Icon added */}
             {frozenTime ?? time}
           </div>
 
           {/* Click Button */}
           <button
             onClick={handleButtonClick} // Use the handler that checks attempts first
-            className={`w-full py-4 rounded-lg text-xl font-bold transition-colors ${
+            className={`w-full py-4 rounded-lg text-xl font-bold transition-colors flex items-center justify-center gap-2 ${ // Added flex, gap
               // Apply disabled styles based on game state, but keep clickable
               showButtonAsDisabled
                 ? "bg-gray-600 cursor-not-allowed" // Style as disabled
                 : "bg-blue-600 hover:bg-blue-700" // Style as active
             }`}
           >
-            {isSubmitting ? "Processing..." : "Click Me!"}{" "}
-            {/* Show processing text */}
+            {isSubmitting ? (
+                <>Processing... <Loader size={20} className="animate-spin" /></> // Icon for processing
+            ) : (
+                <>Click Me! <MousePointerClick size={20} /></> // Icon for click
+            )}
           </button>
 
           {/* Game Stats Component */}
@@ -202,17 +213,19 @@ const Game: React.FC = () => {
               console.log("Game: Opening rules modal."); // Logging rules open
               setShowRules(true);
             }}
-            className="mt-6 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+            className="mt-6 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors flex items-center justify-center gap-2" // Added flex, gap
           >
             Game Rules
+            <BookOpen size={18} /> {/* Icon added */}
           </button>
 
           {/* Logout Button */}
           <button
             onClick={handleSignOut}
-            className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 rounded transition-colors text-white"
+            className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 rounded transition-colors text-white flex items-center justify-center gap-2" // Added flex, gap
           >
             Logout
+            <LogOut size={18} /> {/* Icon added */}
           </button>
         </div>
 

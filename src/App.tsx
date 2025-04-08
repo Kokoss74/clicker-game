@@ -10,6 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "./store/auth";
 import { useGameStore } from "./store/game";
 import Game from "./components/Game";
+import { Phone, UserPlus, LogIn, AlertTriangle, Loader } from 'lucide-react'; // Import icons
 
 function AuthForm() {
   const { signIn, signUp, error } = useAuthStore();
@@ -64,14 +65,15 @@ function AuthForm() {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-4 text-center text-white">
+      <h2 className="text-2xl font-bold mb-4 text-center text-white flex items-center justify-center gap-2">
         {isSignUp ? "Sign Up" : "Sign In"}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-gray-300 text-sm font-bold mb-2">
+          <label className="block text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
             Phone
+            <Phone size={16} /> {/* Icon added after text */}
           </label>
           <input
             type="tel"
@@ -84,7 +86,7 @@ function AuthForm() {
 
         {isSignUp && (
           <div>
-            <label className="block text-gray-300 text-sm font-bold mb-2">
+            <label className="block text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
               Name
             </label>
             <input
@@ -99,9 +101,10 @@ function AuthForm() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center gap-2"
         >
           {isSignUp ? "Sign Up" : "Sign In"}
+          {isSignUp ? <UserPlus size={20} /> : <LogIn size={20} />} {/* Icon added after text */}
         </button>
       </form>
 
@@ -111,13 +114,16 @@ function AuthForm() {
           setIsSignUp(!isSignUp);
           setLocalError(null); // Clear error on mode switch
         }}
-        className="mt-4 w-full text-center text-blue-400 hover:text-blue-300"
+        className="mt-4 w-full text-center text-blue-400 hover:text-blue-300 flex items-center justify-center gap-1"
       >
         {isSignUp ? "Already have an account?" : "Create an account"}
       </button>
 
       {localError && (
-        <div className="mt-4 text-red-500 text-center">{localError}</div>
+        <div className="mt-4 text-red-500 text-center flex items-center justify-center gap-1">
+            <AlertTriangle size={16} /> {/* Icon added after text */}
+            {localError}
+        </div>
       )}
     </div>
   );
@@ -152,7 +158,10 @@ function App() {
     // console.log("App: Rendering Loading screen."); // Removed noisy log
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl flex items-center gap-2">
+            Loading...
+            <Loader size={24} className="animate-spin" /> {/* Icon added after text */}
+        </div>
       </div>
     );
   }
