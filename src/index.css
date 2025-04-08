@@ -12,6 +12,9 @@
 
   body {
     /* Basic body setup */
+    @apply bg-gray-100 dark:bg-gray-900 transition-colors duration-200;
+    /* This ensures the body background matches the theme */
+    min-height: 100vh;
   }
 
   #root {
@@ -20,5 +23,6 @@
     /* Ensure the root container also allows flex behavior if needed */
     display: flex;
     flex-direction: column;
+    min-height: 100vh; /* Ensure root takes at least full viewport height */
   }
 }
