@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
 import { useTimer } from "../hooks/useTimer";
 import { useAuthStore } from "../store/auth";
@@ -94,7 +94,8 @@ const Game: React.FC = () => {
   // --- Best Result Highlighting Logic ---
   const [bestResultIndex, setBestResultIndex] = useState<number | null>(null);
 
-  const findBestResult = (attemptsData: typeof attempts) => {
+  // Wrap findBestResult in useCallback to stabilize its reference
+  const findBestResult = useCallback((attemptsData: typeof attempts) => {
     if (attemptsData.length === 0) {
       setBestResultIndex(null);
       return;
@@ -108,7 +109,7 @@ const Game: React.FC = () => {
       }
     });
     setBestResultIndex(originalIndex !== -1 ? originalIndex : null);
-  };
+  }, []); // Empty dependency array as it doesn't depend on props/state outside its scope
 
   useEffect(() => {
     if (currentUser && currentUser.attempts_left <= 0) {
@@ -116,7 +117,8 @@ const Game: React.FC = () => {
     } else {
       setBestResultIndex(null);
     }
-  }, [attempts, currentUser?.attempts_left]);
+    // Include currentUser and the now stable findBestResult
+  }, [attempts, currentUser?.attempts_left, currentUser, findBestResult]);
   // --- End Best Result Highlighting ---
 
   // Effect to start the timer when the component mounts and user is loaded

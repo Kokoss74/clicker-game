@@ -10,7 +10,7 @@ type Attempt = Database["public"]["Tables"]["attempts"]["Row"];
 interface UseSupabaseReturn {
   loading: boolean;
   error: string | null;
-  recordAttempt: (userId: string, difference: number) => Promise<boolean>;
+  recordAttempt: (difference: number) => Promise<boolean>;
   getUserAttempts: (userId: string, limit: number) => Promise<Attempt[]>;
   getUser: (userId: string) => Promise<User | null>;
   resetUserAttempts: (userId: string) => Promise<boolean>;
@@ -22,7 +22,7 @@ export const useSupabase = (): UseSupabaseReturn => {
   const gameStore = useGameStore(); 
 
   const recordAttempt = useCallback(
-    async (userId: string, difference: number): Promise<boolean> => {
+    async (difference: number): Promise<boolean> => {
       try {
         setLoading(true);
         setError(null);

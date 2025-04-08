@@ -40,7 +40,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
       // Clear local error if store error is cleared
       setLocalError(null);
     }
-  }, [error]); 
+  }, [error, isSignUp]);
 
   // Clear local error on input change
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +108,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Phone Input */}
         <div>
-          <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
+          <label className="text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
             Phone <Phone size={16} />
           </label>
           <input
@@ -126,7 +126,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
         {/* Name Input (only for Sign Up) */}
         {isSignUp && (
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
+            <label className="text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
               Name
             </label>
             <input
@@ -211,7 +211,7 @@ function App() {
       console.log("App Init: Finished.");
     };
     init();
-  }, []); 
+  }, [checkUser, loadSettings]);
 
   // Determine if the app is in the initial loading phase
   const isInitializing = !initialized || settingsLoading;

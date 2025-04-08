@@ -109,7 +109,7 @@ export const useGameSession = () => {
       setIsSubmitting(true); // Indicate submission is in progress
       const previousAttemptsLeft = currentUser.attempts_left;
 
-      const success = await recordAttempt(user.id, difference);
+      const success = await recordAttempt(difference);
       console.log(`handleAttemptSubmit: recordAttempt result: ${success}`); // Logging recordAttempt result
 
       // Refresh data regardless of success/failure to get latest state,
