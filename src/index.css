@@ -5,7 +5,8 @@
 @layer base {
   html,
   body,
-  #root { /* Assuming your root element has id="root" */
+  #root {
+    /* Assuming your root element has id="root" */
     height: 100%;
   }
 
@@ -14,8 +15,8 @@
   }
 
   #root {
-     /* Ensure the root container also allows flex behavior if needed */
-     display: flex;
-     flex-direction: column;
+    /* Ensure the root container also allows flex behavior if needed */
+    display: flex;
+    flex-direction: column;
   }
 }

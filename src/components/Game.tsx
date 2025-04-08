@@ -156,10 +156,22 @@ const Game: React.FC = () => {
       Date.now() < cooldownEndTime);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 flex flex-col">
+    <div className="bg-gray-900 text-white p-4 flex flex-col">
       <div className="flex-grow">
 
         <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
+          {/* User Info and Logout */}
+          <div className="flex justify-start items-center mb-4 gap-2">
+            <span>Gamer:</span>
+            <span className="font-semibold">
+              {currentUser?.name} 
+            </span>
+            <LogOut
+              size={20}
+              className="text-gray-400 hover:text-blue-500 cursor-pointer"
+              onClick={handleSignOut} 
+            />
+          </div>
           {/* Timer Display: Show frozen time if available, otherwise live time */}
           <div className="timer text-4xl font-mono mb-6 text-center flex items-center justify-center gap-2">
             <Clock size={36} />
@@ -215,14 +227,6 @@ const Game: React.FC = () => {
             <BookOpen size={18} /> 
           </button>
 
-          {/* Logout Button */}
-          <button
-            onClick={handleSignOut}
-            className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 rounded transition-colors text-white flex items-center justify-center gap-2" // Added flex, gap
-          >
-            Logout
-            <LogOut size={18} /> 
-          </button>
         </div>
 
         {/* Rules Modal */}

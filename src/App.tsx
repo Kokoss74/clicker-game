@@ -234,7 +234,7 @@ function App() {
           {/* Conditionally render AuthForm or Game based on user state */}
         {!user ? (
           // Render AuthForm container
-          <div className="flex justify-center items-center min-h-screen">
+          <div className="flex justify-center items-center">
             {/* Pass the authLoading state to AuthForm */}
             {/* This ensures AuthForm does not unmount during auth operations */}
             <AuthForm isLoading={authLoading} />
