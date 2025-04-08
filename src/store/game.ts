@@ -31,6 +31,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   error: null,
 
   loadSettings: async () => {
+    console.log("GameStore: loadSettings started."); // Logging start
     try {
       set({ loading: true, error: null });
 
@@ -40,8 +41,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         .eq("id", 1) // Assuming settings are stored with id=1
         .maybeSingle(); // Use maybeSingle to handle null case gracefully
 
-      if (error) throw error;
-
+      if (error) {
+        console.error("GameStore: Error fetching settings from Supabase:", error); // Logging fetch error
+        throw error;
+      }
       // Ensure smile_ranges is an array and cooldown_minutes is a number, providing defaults if null/invalid
       const loadedSettings = settings
         ? {
@@ -61,8 +64,10 @@ export const useGameStore = create<GameState>((set, get) => ({
           }
         : null; // If settings are null from DB, keep it null
 
+      console.log("GameStore: Final loaded settings:", loadedSettings); // Log the processed settings object
       set({ settings: loadedSettings, loading: false });
     } catch (error) {
+      // Existing console.error is good here
       console.error("Error loading game settings:", error);
       set({ error: (error as Error).message, loading: false });
       // Set settings to null in case of error, helpers will provide defaults

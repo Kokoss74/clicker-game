@@ -30,9 +30,12 @@ const Game: React.FC = () => {
 
   // Handler for the button click
   const handleButtonClick = async () => {
+    console.log("Game: handleButtonClick triggered."); // Logging button click
     // 1. Check if attempts are left *first*
     if (currentUser && currentUser.attempts_left <= 0) {
+      console.log("Game: Checking attempts left - user has 0 attempts."); // Logging zero attempts check
       if (cooldownEndTime && Date.now() < cooldownEndTime) {
+        console.log("Game: Cooldown is active."); // Logging cooldown active
         toast.warning(
           `Next game will be available ${formatRemainingCooldown(
             cooldownEndTime
@@ -40,6 +43,7 @@ const Game: React.FC = () => {
         );
         return; // Only return if we are SURE cooldown is active
       } else {
+        console.log("Game: Cooldown seems to be over, allowing attempt submission check."); // Logging cooldown potentially over
         toast.info(
           "No attempts left for this session. Click again to start new game if cooldown passed."
         );
@@ -50,6 +54,7 @@ const Game: React.FC = () => {
 
     // 2. Check 2-second visual delay OR if a submission is already in progress
     if (isClickDelayed || isSubmitting) {
+      console.log(`Game: Click rejected. isClickDelayed=${isClickDelayed}, isSubmitting=${isSubmitting}`); // Logging click rejection
       toast.warning("Please wait before the next attempt.");
       return;
     }
@@ -57,17 +62,24 @@ const Game: React.FC = () => {
     // --- Proceed with attempt logic ---
 
     // Apply visual delay
+    // Apply visual delay without logging start/end
     setIsClickDelayed(true);
-    setTimeout(() => setIsClickDelayed(false), 2000);
+    setTimeout(() => {
+        setIsClickDelayed(false);
+    }, 2000);
 
     // Stop timer and capture the current time for freezing
+    // Stop timer without logging
     stopTimer();
     setFrozenTime(time); // << CAPTURE TIME HERE
     const diff: number =
       milliseconds < 500 ? milliseconds : 1000 - milliseconds;
+    console.log(`Game: Calculated difference: ${diff}ms (raw milliseconds: ${milliseconds})`); // Logging calculated diff
 
     // Call the actual attempt logic from the hook
+    console.log("Game: Calling handleAttemptSubmit..."); // Logging submit call
     const success = await handleAttemptSubmit(diff);
+    console.log(`Game: handleAttemptSubmit returned: ${success}`); // Logging submit result
 
     // Only show success toast here if needed
     if (success) {
@@ -76,6 +88,7 @@ const Game: React.FC = () => {
     // Error toasts are handled within useSupabase/useGameSession hooks
 
     // Unfreeze the display and restart the timer AFTER the attempt logic is fully processed
+    // Unfreeze display and restart timer without logging
     setFrozenTime(null); // << UNFREEZE TIME HERE
     startTimer();
   };
@@ -84,6 +97,7 @@ const Game: React.FC = () => {
   const [bestResultIndex, setBestResultIndex] = useState<number | null>(null);
 
   const findBestResult = (attemptsData: typeof attempts) => {
+    // Removed findBestResult internal logs for noise reduction
     if (attemptsData.length === 0) {
       setBestResultIndex(null);
       return;
@@ -100,6 +114,7 @@ const Game: React.FC = () => {
   };
 
   useEffect(() => {
+    // Removed noisy effect logs
     if (currentUser && currentUser.attempts_left <= 0) {
       findBestResult(attempts);
     } else {
@@ -110,23 +125,28 @@ const Game: React.FC = () => {
 
   // Effect to start the timer when the component mounts and user is loaded
   useEffect(() => {
+    // Removed noisy effect logs
     if (currentUser && !isLoading) {
       // Start timer only when user data is available and initial load is done
       startTimer();
     }
     // Cleanup function to stop timer on unmount
     return () => {
+      // Stop timer in cleanup without logging
       stopTimer();
     };
   }, [currentUser, isLoading, startTimer, stopTimer]); // Add isLoading dependency
 
   const handleSignOut = async () => {
+    console.log("Game: handleSignOut called."); // Logging sign out call
     await signOut();
     toast.info("You have been logged out.");
   };
 
   // Use initial loading state from the hook for the main loading screen
+  // Removed noisy loading check logs
   if (isLoading || !currentUser) {
+    // Removed noisy rendering log
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
         <div className="text-xl">Loading Game...</div>
@@ -178,7 +198,10 @@ const Game: React.FC = () => {
 
           {/* Rules Button */}
           <button
-            onClick={() => setShowRules(true)}
+            onClick={() => {
+              console.log("Game: Opening rules modal."); // Logging rules open
+              setShowRules(true);
+            }}
             className="mt-6 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
           >
             Game Rules
@@ -196,7 +219,10 @@ const Game: React.FC = () => {
         {/* Rules Modal */}
         <ModalRules
           isOpen={showRules}
-          onRequestClose={() => setShowRules(false)}
+          onRequestClose={() => {
+            console.log("Game: Closing rules modal."); // Logging rules close
+            setShowRules(false);
+          }}
         />
       </div>
 

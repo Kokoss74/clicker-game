@@ -23,6 +23,7 @@ function AuthForm() {
     setLocalError(error);
 
     if (error === "Invalid login credentials") {
+      console.log("AuthForm Effect: Invalid credentials detected, switching to sign up."); // Logging switch
       // Show toast message
       toast.error("User not registered. Please create an account.");
       // Switch to registration mode
@@ -43,17 +44,22 @@ function AuthForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(`AuthForm: Handling submit. Mode: ${isSignUp ? "Sign Up" : "Sign In"}`); // Logging submit start
 
     if (isSignUp) {
       // Check minimum name length
       if (name.trim().length < 3) {
+        console.warn("AuthForm: Sign up validation failed - name too short."); // Logging validation fail
         setLocalError("Name must be at least 3 characters long");
         return;
       }
+      console.log("AuthForm: Calling signUp with phone:", phone, "name:", name); // Logging signUp call
       await signUp({ phone, name });
     } else {
+      console.log("AuthForm: Calling signIn with phone:", phone); // Logging signIn call
       await signIn({ phone });
     }
+    console.log("AuthForm: Submit handler finished."); // Logging submit end
   };
 
   return (
@@ -100,7 +106,11 @@ function AuthForm() {
       </form>
 
       <button
-        onClick={() => setIsSignUp(!isSignUp)}
+        onClick={() => {
+          console.log(`AuthForm: Toggling form mode to ${!isSignUp ? "Sign Up" : "Sign In"}`); // Logging mode toggle
+          setIsSignUp(!isSignUp);
+          setLocalError(null); // Clear error on mode switch
+        }}
         className="mt-4 w-full text-center text-blue-400 hover:text-blue-300"
       >
         {isSignUp ? "Already have an account?" : "Create an account"}
@@ -121,20 +131,25 @@ function App() {
   useEffect(() => {
     // Initialize the application on load
     const init = async () => {
+      // console.log("App Effect init: Calling checkUser and loadSettings..."); // Removed noisy log
       await Promise.all([
         checkUser(),
         loadSettings(), // Restored loadSettings call
       ]);
       setInitialized(true);
+      console.log("App Effect init: Initialization complete."); // Logging init complete
     };
 
     init();
+    // console.log("App Effect: Initialization process started."); // Removed noisy log
   }, []); // Removed checkUser from dependencies as it's stable
 
   // Consider both auth and settings loading state
   const isLoading = authLoading || settingsLoading || !initialized;
 
+  // console.log(`App: Current loading state: isLoading=${isLoading} (auth=${authLoading}, settings=${settingsLoading}, initialized=${initialized})`); // Removed noisy log
   if (isLoading) {
+    // console.log("App: Rendering Loading screen."); // Removed noisy log
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
         <div className="text-xl">Loading...</div>
@@ -146,14 +161,24 @@ function App() {
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <div className="min-h-screen bg-gray-900">
         {!user ? (
-          <div className="flex justify-center items-center min-h-screen">
-            <AuthForm />
-          </div>
+          (() => { // IIFE to allow statement before expression
+            // console.log("App: Rendering AuthForm (no user)."); // Removed noisy log
+            return (
+              <div className="flex justify-center items-center min-h-screen">
+                <AuthForm />
+              </div>
+            );
+          })()
         ) : (
-          <Routes>
-            <Route path="/" element={<Game />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          (() => { // IIFE to allow statement before expression
+            // console.log("App: Rendering Game component (user exists)."); // Removed noisy log
+            return (
+              <Routes>
+                <Route path="/" element={<Game />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            );
+          })()
         )}
         <ToastContainer position="top-right" autoClose={3000} theme="dark" />
       </div>

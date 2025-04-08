@@ -65,8 +65,10 @@ export const auth = {
       });
 
       if (error) throw error;
+      console.log("Sign up successful. Data:", data); // Logging success with data object
       return { data, error: null };
     } catch (error) {
+      console.error("Sign up failed:", error); // Logging error
       return { data: null, error };
     }
   },
@@ -87,8 +89,10 @@ export const auth = {
       });
 
       if (error) throw error;
+      console.log("Sign in successful. Data:", data); // Logging success with data object
       return { data, error: null };
     } catch (error) {
+      console.error("Sign in failed:", error); // Logging error
       return { data: null, error };
     }
   },
@@ -97,8 +101,10 @@ export const auth = {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      console.log("Sign out successful"); // Logging success
       return { error: null };
     } catch (error) {
+      console.error("Sign out failed:", error); // Logging error
       return { error };
     }
   },
@@ -110,8 +116,10 @@ export const auth = {
         error,
       } = await supabase.auth.getSession();
       if (error) throw error;
+      console.log("Get session successful. Session:", session); // Logging success with session object
       return { session, error: null };
     } catch (error) {
+      console.error("Get session failed:", error); // Logging error
       return { session: null, error };
     }
   },

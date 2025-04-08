@@ -30,8 +30,12 @@ export const useSupabase = (): UseSupabaseReturn => {
           difference_value: difference,
         });
 
-        if (rpcError) throw rpcError;
+        if (rpcError) {
+          console.error("recordAttempt: RPC error:", rpcError); // Logging RPC error
+          throw rpcError;
+        }
         if (data === false) {
+          console.warn("recordAttempt: Attempt rejected by RPC (cooldown or no attempts)."); // Logging rejection
           setError(
             "Attempt could not be recorded (cooldown active or no attempts left)."
           );
@@ -39,7 +43,7 @@ export const useSupabase = (): UseSupabaseReturn => {
         }
         return true;
       } catch (error) {
-        console.error("Error recording attempt:", error);
+        console.error("recordAttempt: Error caught:", error); // Logging caught error
         const errorMessage = (error as Error).message;
         if (errorMessage.includes("Cooldown active")) {
           setError("Cooldown active. Try again later.");
@@ -71,9 +75,14 @@ export const useSupabase = (): UseSupabaseReturn => {
           .order("created_at", { ascending: false })
           .limit(limit);
 
-        if (error) throw error;
+        if (error) {
+          console.error("getUserAttempts: Error fetching attempts:", error); // Logging fetch error
+          throw error;
+        }
+        console.log(`getUserAttempts: Fetched attempts for user ${userId}:`, data); // Log fetched attempts data
         return data || [];
       } catch (error) {
+        console.error("getUserAttempts: Error caught:", error); // Logging caught error
         setError((error as Error).message);
         return [];
       } finally {
@@ -96,13 +105,16 @@ export const useSupabase = (): UseSupabaseReturn => {
 
       if (error) {
         if (error.code === "PGRST116") {
-          console.warn(`User with id ${userId} not found.`);
+          console.warn(`getUser: User with id ${userId} not found (PGRST116).`); // Logging not found
           return null;
         }
+        console.error("getUser: Error fetching user:", error); // Logging fetch error
         throw error;
       }
+      console.log(`getUser: Fetched user data for ID ${userId}:`, data); // Log fetched user data
       return data;
     } catch (error) {
+      console.error("getUser: Error caught:", error); // Logging caught error
       setError((error as Error).message);
       return null;
     } finally {
@@ -116,6 +128,7 @@ export const useSupabase = (): UseSupabaseReturn => {
       try {
         setLoading(true);
         setError(null);
+        console.log(`resetUserAttempts: Updating user ${userId} attempts_left to ${gameStore.settings?.attempts_number ?? 10}`); // Logging update details
         const { error: updateError } = await supabase
           .from("users")
           .update({
@@ -126,21 +139,25 @@ export const useSupabase = (): UseSupabaseReturn => {
           })
           .eq("id", userId);
 
-        if (updateError) throw updateError;
-
+        if (updateError) {
+          console.error(`resetUserAttempts: Error updating user ${userId}:`, updateError); // Logging update error
+          throw updateError;
+        }
         const { error: deleteError } = await supabase
           .from("attempts")
           .delete()
           .eq("user_id", userId);
 
         if (deleteError) {
-          console.warn(
-            "Could not delete old attempts during reset:",
+          console.warn( // Keep as warn, as reset might partially succeed
+            `resetUserAttempts: Could not delete old attempts for user ${userId} during reset:`,
             deleteError
           );
+          // Don't throw here, the user update might have succeeded
         }
         return true;
       } catch (error) {
+        console.error(`resetUserAttempts: Error caught during reset for user ${userId}:`, error); // Logging caught error
         setError((error as Error).message);
         return false;
       } finally {
