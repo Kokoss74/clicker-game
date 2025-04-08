@@ -16,13 +16,16 @@ This is a web-based clicker game where the objective is to click a button as clo
 *   **Game Rules:** A modal window explaining the game objective, rules, and smile calculation.
 *   **Authentication:** Users sign up and log in using their phone number (utilizing Supabase Auth with Email/Password provider behind the scenes).
 *   **Logout:** Users can log out to return to the login screen.
+*   **Dark/Light Theme:** Supports switching between dark and light visual themes for user preference.
+*   **Responsive Design:** The user interface adapts gracefully to various screen sizes, ensuring usability on desktops, tablets, and mobile devices.
+*   **Comprehensive Logging:** Includes detailed logging mechanisms (e.g., in the browser console) to aid in development, debugging, and monitoring application behavior.
 
 ## Tech Stack
 
 *   **Frontend:**
     *   Vite + React + TypeScript
-    *   Tailwind CSS for styling
-    *   Zustand for state management (authentication, game settings)
+    *   Tailwind CSS for styling (including theme support and responsiveness)
+    *   Zustand for state management (authentication, game settings, theme)
     *   React Toastify for notifications
     *   React Modal for the rules dialog
 *   **Backend:**
