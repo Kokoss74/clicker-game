@@ -231,18 +231,18 @@ function App() {
   return (
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <div className="min-h-[100dvh] flex flex-col"> 
-        <header className="text-center py-4 relative"> 
-          <h1 className="text-3xl font-bold flex items-center justify-center gap-2"> 
-            Clicker Game
+        <header className="text-center py-4">
+          <h1 className="text-3xl font-bold flex items-center justify-center gap-2">
             <Gamepad2 size={30} />
+            Clicker Game
+            <button
+              onClick={() => setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              aria-label="Toggle theme"
+            >
+              {effectiveTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
           </h1>
-          <button
-            onClick={() => setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')}
-            className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-            aria-label="Toggle theme"
-          >
-            {effectiveTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
         </header>
 
         {/* Main Content Area */}
@@ -277,3 +277,4 @@ function App() {
 }
 
 export default App;
+
