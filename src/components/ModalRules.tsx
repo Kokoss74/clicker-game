@@ -28,13 +28,13 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
       <div className="text-white">
         <h2 className="text-2xl font-bold mb-4 text-center text-blue-300 flex items-center justify-center gap-2">
           Game Rules
-          <BookOpen size={24} /> {/* Icon added */}
+          <BookOpen size={24} />
         </h2>
         {/* Centered and colored title */}
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-blue-200 flex items-center gap-1">
             Objective:
-            <Target size={18} /> {/* Icon added */}
+            <Target size={18} />
           </h3>
           {/* Colored subheading */}
           <p>
@@ -76,7 +76,7 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
         <div className="mb-4">
           <h3 className="text-lg font-semibold mb-2 text-blue-200 flex items-center gap-1">
             Earning Smiles:
-            <Smile size={18} /> {/* Icon added */}
+            <Smile size={18} />
           </h3>
           {/* Colored subheading */}
           <p className="mb-2">
@@ -122,7 +122,7 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
           className="mt-6 w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center justify-center gap-2" // Added focus style and flex
         >
           Close
-          <X size={20} /> {/* Icon added */}
+          <X size={20} />
         </button>
       </div>
     </Modal>

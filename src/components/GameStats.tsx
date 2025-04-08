@@ -1,6 +1,7 @@
 import React from "react";
-import { Database } from "../lib/database.types";
-import { generateSmileEmojis } from "../utils/gameUtils";
+import { Database, SmileRange } from "../lib/database.types";
+import { calculateSmiles } from "../utils/gameUtils";
+type Attempt = Database["public"]["Tables"]["attempts"]["Row"];
 
 // Re-define User type locally or import if shared
 type User = Database["public"]["Tables"]["users"]["Row"] & {
@@ -10,28 +11,55 @@ type User = Database["public"]["Tables"]["users"]["Row"] & {
 
 interface GameStatsProps {
   currentUser: User | null;
+  attempts: Attempt[];
+  bestResultIndex: number | null;
+  smileRanges: SmileRange[] | null | undefined;
 }
 
-const GameStats: React.FC<GameStatsProps> = ({ currentUser }) => {
+const GameStats: React.FC<GameStatsProps> = ({
+  currentUser,
+  attempts,
+  bestResultIndex,
+  smileRanges,
+}) => {
   if (!currentUser) {
     return null; // Or a loading/placeholder state
   }
 
   return (
     <div className="mt-6 text-gray-300">
+      {/* Game Over Message & Best Result */}
+      {currentUser.attempts_left <= 0 &&
+        bestResultIndex !== null &&
+        attempts[bestResultIndex] && (
+          <div className="bg-green-700 text-white p-3 rounded mb-4 text-center font-semibold shadow-md">
+            {" "}
+            <p className="text-lg mb-1">Game Over!</p>
+            <p>
+              {/* Calculate smiles based on difference and defined ranges */}
+              Smiles for Best Result:{" "}
+              {calculateSmiles(
+                attempts[bestResultIndex].difference,
+                smileRanges
+              )}
+            </p>
+            {/* Display the actual emojis on a new line */}
+            <p className="text-2xl mt-1">
+              {"😊".repeat(
+                calculateSmiles(
+                  attempts[bestResultIndex].difference,
+                  smileRanges
+                )
+              )}
+            </p>
+          </div>
+        )}
+
+      {/* Regular Stats */}
       <p className="mb-2">Attempts left: {currentUser.attempts_left}</p>
       {currentUser.best_result !== null && (
         <p className="mb-2">Best Result: {currentUser.best_result} ms</p>
       )}
-      {/* Display smiles for best result if available and attempts are finished */}
-      {currentUser.attempts_left <= 0 &&
-        currentUser.total_smiles !== undefined && // Check if total_smiles exists
-        currentUser.best_result !== null && ( // Only show if there's a best result
-          <p className="mt-2">
-            Smiles for Best Result: {currentUser.total_smiles}{" "}
-            {generateSmileEmojis(currentUser.total_smiles)}
-          </p>
-        )}
     </div>
   );
 };

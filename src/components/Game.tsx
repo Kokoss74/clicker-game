@@ -8,7 +8,14 @@ import ModalRules from "./ModalRules";
 import GameStats from "./GameStats";
 import AttemptsTable from "./AttemptsTable";
 import { formatRemainingCooldown } from "../utils/gameUtils";
-import { Clock, MousePointerClick, Loader, BookOpen, LogOut, Gamepad2 } from 'lucide-react'; // Import icons
+import {
+  Clock,
+  MousePointerClick,
+  Loader,
+  BookOpen,
+  LogOut,
+  Gamepad2,
+} from "lucide-react"; 
 
 const Game: React.FC = () => {
   const { signOut } = useAuthStore();
@@ -29,12 +36,11 @@ const Game: React.FC = () => {
   // State to hold the displayed time during submission "freeze"
   const [frozenTime, setFrozenTime] = useState<string | null>(null);
 
-  // Handler for the button click
   const handleButtonClick = async () => {
     console.log("Game: handleButtonClick triggered."); // Logging button click
     // 1. Check if attempts are left *first*
     if (currentUser && currentUser.attempts_left <= 0) {
-      console.log("Game: Checking attempts left - user has 0 attempts."); // Logging zero attempts check
+      console.log("Game: Checking attempts left - user has 0 attempts.");
       if (cooldownEndTime && Date.now() < cooldownEndTime) {
         console.log("Game: Cooldown is active."); // Logging cooldown active
         toast.warning(
@@ -44,7 +50,7 @@ const Game: React.FC = () => {
         );
         return; // Only return if we are SURE cooldown is active
       } else {
-        console.log("Game: Cooldown seems to be over, allowing attempt submission check."); // Logging cooldown potentially over
+        console.log("Game: Cooldown seems to be over, allowing attempt submission check.");
         // Allow click to proceed if cooldown might be over
       }
       // If cooldown seems over, let the handleAttemptSubmit call proceed below
@@ -52,32 +58,28 @@ const Game: React.FC = () => {
 
     // 2. Check 2-second visual delay OR if a submission is already in progress
     if (isClickDelayed || isSubmitting) {
-      console.log(`Game: Click rejected. isClickDelayed=${isClickDelayed}, isSubmitting=${isSubmitting}`); // Logging click rejection
+      console.log(`Game: Click rejected. isClickDelayed=${isClickDelayed}, isSubmitting=${isSubmitting}`); 
       toast.warning("Please wait before the next attempt.");
       return;
     }
 
     // --- Proceed with attempt logic ---
-
     // Apply visual delay
-    // Apply visual delay without logging start/end
     setIsClickDelayed(true);
     setTimeout(() => {
-        setIsClickDelayed(false);
+      setIsClickDelayed(false);
     }, 2000);
 
     // Stop timer and capture the current time for freezing
-    // Stop timer without logging
     stopTimer();
     setFrozenTime(time); // << CAPTURE TIME HERE
     const diff: number =
       milliseconds < 500 ? milliseconds : 1000 - milliseconds;
-    console.log(`Game: Calculated difference: ${diff}ms (raw milliseconds: ${milliseconds})`); // Logging calculated diff
+    console.log(`Game: Calculated difference: ${diff}ms (raw milliseconds: ${milliseconds})`);
 
     // Call the actual attempt logic from the hook
-    console.log("Game: Calling handleAttemptSubmit..."); // Logging submit call
     const success = await handleAttemptSubmit(diff);
-    console.log(`Game: handleAttemptSubmit returned: ${success}`); // Logging submit result
+    console.log(`Game: handleAttemptSubmit returned: ${success}`);
 
     // Only show success toast here if needed
     if (success) {
@@ -86,7 +88,6 @@ const Game: React.FC = () => {
     // Error toasts are handled within useSupabase/useGameSession hooks
 
     // Unfreeze the display and restart the timer AFTER the attempt logic is fully processed
-    // Unfreeze display and restart timer without logging
     setFrozenTime(null); // << UNFREEZE TIME HERE
     startTimer();
   };
@@ -95,7 +96,6 @@ const Game: React.FC = () => {
   const [bestResultIndex, setBestResultIndex] = useState<number | null>(null);
 
   const findBestResult = (attemptsData: typeof attempts) => {
-    // Removed findBestResult internal logs for noise reduction
     if (attemptsData.length === 0) {
       setBestResultIndex(null);
       return;
@@ -112,7 +112,6 @@ const Game: React.FC = () => {
   };
 
   useEffect(() => {
-    // Removed noisy effect logs
     if (currentUser && currentUser.attempts_left <= 0) {
       findBestResult(attempts);
     } else {
@@ -123,33 +122,27 @@ const Game: React.FC = () => {
 
   // Effect to start the timer when the component mounts and user is loaded
   useEffect(() => {
-    // Removed noisy effect logs
     if (currentUser && !isLoading) {
-      // Start timer only when user data is available and initial load is done
       startTimer();
     }
     // Cleanup function to stop timer on unmount
     return () => {
-      // Stop timer in cleanup without logging
       stopTimer();
     };
   }, [currentUser, isLoading, startTimer, stopTimer]); // Add isLoading dependency
 
   const handleSignOut = async () => {
-    console.log("Game: handleSignOut called."); // Logging sign out call
     await signOut();
     toast.info("You have been logged out.");
   };
 
   // Use initial loading state from the hook for the main loading screen
-  // Removed noisy loading check logs
   if (isLoading || !currentUser) {
-    // Removed noisy rendering log
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
         <div className="text-xl flex items-center gap-2">
-            Loading Game...
-            <Loader size={24} className="animate-spin" /> {/* Icon added */}
+          Loading Game...
+          <Loader size={24} className="animate-spin" />
         </div>
       </div>
     );
@@ -159,27 +152,29 @@ const Game: React.FC = () => {
   const showButtonAsDisabled =
     isClickDelayed ||
     isSubmitting ||
-    (currentUser.attempts_left <= 0 && cooldownEndTime && Date.now() < cooldownEndTime);
+    (currentUser.attempts_left <= 0 &&
+      cooldownEndTime &&
+      Date.now() < cooldownEndTime);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 flex flex-col">
       <div className="flex-grow">
         <h1 className="text-3xl font-bold text-center mb-8 flex items-center justify-center gap-2">
-            Clicker Game
-            <Gamepad2 size={30} /> {/* Icon added */}
+          Clicker Game
+          <Gamepad2 size={30} />
         </h1>
 
         <div className="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg p-6">
           {/* Timer Display: Show frozen time if available, otherwise live time */}
           <div className="timer text-4xl font-mono mb-6 text-center flex items-center justify-center gap-2">
-            <Clock size={36} /> {/* Icon added */}
+            <Clock size={36} />
             {frozenTime ?? time}
           </div>
 
           {/* Click Button */}
           <button
             onClick={handleButtonClick} // Use the handler that checks attempts first
-            className={`w-full py-4 rounded-lg text-xl font-bold transition-colors flex items-center justify-center gap-2 ${ // Added flex, gap
+            className={`w-full py-4 rounded-lg text-xl font-bold transition-colors flex items-center justify-center gap-2 ${
               // Apply disabled styles based on game state, but keep clickable
               showButtonAsDisabled
                 ? "bg-gray-600 cursor-not-allowed" // Style as disabled
@@ -187,14 +182,23 @@ const Game: React.FC = () => {
             }`}
           >
             {isSubmitting ? (
-                <>Processing... <Loader size={20} className="animate-spin" /></> // Icon for processing
+              <>
+                Processing... <Loader size={20} className="animate-spin" />
+              </> 
             ) : (
-                <>Click Me! <MousePointerClick size={20} /></> // Icon for click
+              <>
+                Click Me! <MousePointerClick size={20} />
+              </> 
             )}
           </button>
 
           {/* Game Stats Component */}
-          <GameStats currentUser={currentUser} />
+          <GameStats
+            currentUser={currentUser}
+            attempts={attempts} 
+            bestResultIndex={bestResultIndex} 
+            smileRanges={settings?.smile_ranges} 
+          />
 
           {/* Attempts Table Component */}
           <AttemptsTable
@@ -207,13 +211,13 @@ const Game: React.FC = () => {
           {/* Rules Button */}
           <button
             onClick={() => {
-              console.log("Game: Opening rules modal."); // Logging rules open
+              console.log("Game: Opening rules modal."); 
               setShowRules(true);
             }}
             className="mt-6 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors flex items-center justify-center gap-2" // Added flex, gap
           >
             Game Rules
-            <BookOpen size={18} /> {/* Icon added */}
+            <BookOpen size={18} /> 
           </button>
 
           {/* Logout Button */}
@@ -222,7 +226,7 @@ const Game: React.FC = () => {
             className="mt-4 w-full py-2 bg-red-600 hover:bg-red-700 rounded transition-colors text-white flex items-center justify-center gap-2" // Added flex, gap
           >
             Logout
-            <LogOut size={18} /> {/* Icon added */}
+            <LogOut size={18} /> 
           </button>
         </div>
 
@@ -230,7 +234,7 @@ const Game: React.FC = () => {
         <ModalRules
           isOpen={showRules}
           onRequestClose={() => {
-            console.log("Game: Closing rules modal."); // Logging rules close
+            console.log("Game: Closing rules modal."); 
             setShowRules(false);
           }}
         />
