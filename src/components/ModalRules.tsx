@@ -62,12 +62,12 @@ const ModalRules: React.FC<ModalRulesProps> = ({ isOpen, onRequestClose }) => {
               auto-clicking.
             </li>
             <li>
-              You have {attemptsPerSession} attempts per session. After using
+              You have <span className="bg-gray-500 px-1">{attemptsPerSession} attempts</span> per session. After using
               all attempts, the smiles awarded for your best attempt will be
               shown.
             </li>
             <li>
-              A new session of {attemptsPerSession} attempts becomes available
+              A new session of attempts becomes available {" "}
               {cooldownMinutes} minute(s) after your last attempt of the
               previous session.
             </li>
