@@ -87,4 +87,4 @@ This command builds the application for production in the `dist` folder.
 
 ## Author
 
-Created by Pasha Feldman - Skilled Software Engineer with 3+ years of experience and strong AI expertise.
+Created by Pasha Feldman - Full Stack Developer

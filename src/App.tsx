@@ -108,7 +108,7 @@ function App() {
         </main>
 
         <footer className="text-center text-gray-600 dark:text-gray-400 text-sm py-4">
-          Created by Pasha Feldman - Skilled Software Engineer
+          Created by Pasha Feldman - Full Stack Developer
         </footer>
 
         {/* Toast notifications container */}
