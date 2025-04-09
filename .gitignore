@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.local
 .vscodecounter
-README_old.md
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +23,8 @@ README_old.md
 *.njsproj
 *.sln
 *.sw?
+
+# Test artifacts
+/coverage/
+/playwright-report/
+/test-results/
