@@ -25,6 +25,6 @@ dist-ssr
 *.sw?
 
 # Test artifacts
-/coverage/
-/playwright-report/
-/test-results/
+coverage/
+playwright-report/
+test-results/
