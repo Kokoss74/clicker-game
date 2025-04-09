@@ -187,7 +187,7 @@ const Game: React.FC = () => {
             </button>
           </div>
           {/* Timer Display: Show frozen time if available, otherwise live time */}
-          <div className="timer text-4xl font-mono mb-6 text-center flex items-center justify-center gap-2">
+          <div className="timer text-4xl font-mono mb-6 text-center flex items-center justify-center gap-2 notranslate" translate="no">
             <Clock size={36} />
             {frozenTime ?? time}
           </div>
