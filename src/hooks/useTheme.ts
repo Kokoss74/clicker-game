@@ -47,7 +47,7 @@ const useTheme = () => {
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme, applyTheme]); // Rerun if theme changes to/from 'system'
+  }, [theme, applyTheme]);
 
   // Function to update theme state and localStorage
   const setTheme = (newTheme: Theme) => {
