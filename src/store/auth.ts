@@ -15,6 +15,7 @@ interface AuthState {
   signIn: (data: SignInData) => Promise<void>;
   signOut: () => Promise<void>;
   checkUser: () => Promise<void>;
+  clearError: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -106,5 +107,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       set({ error: (error as Error).message, loading: false });
     }
+  },
+
+  clearError: () => {
+    set({ error: null });
   },
 }));

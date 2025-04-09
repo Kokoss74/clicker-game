@@ -28,48 +28,59 @@ interface AuthFormProps {
 }
 
 function AuthForm({ isLoading }: AuthFormProps) {
-  const { signIn, signUp, error } = useAuthStore();
+  const { signIn, signUp, error, clearError } = useAuthStore();
   const [isSignUp, setIsSignUp] = React.useState(false); // Initial mode is Sign In
   const [phone, setPhone] = React.useState("");
   const [name, setName] = React.useState("");
   const [localError, setLocalError] = React.useState<string | null>(null); // Local error for display
+  const [shouldSwitchToSignUp, setShouldSwitchToSignUp] = React.useState(false);
 
   // Effect to sync store error to local error and handle auto-switch *to* Sign Up
+  // Effect 1: Handle error display and trigger the switch flag
   React.useEffect(() => {
     if (error) {
       setLocalError(error);
-      // Auto-switch TO Sign Up only if in Sign In mode and error is "Invalid login credentials"
       if (!isSignUp && error === "Invalid login credentials") {
         console.log(
-          "AuthForm Effect: Invalid credentials on Sign In, switching to Sign Up."
+          "AuthForm Effect 1: Invalid credentials detected, setting trigger to switch."
         );
         toast.error("User not registered. Please create an account.");
-        setIsSignUp(true);
+        setShouldSwitchToSignUp(true);
       }
     } else {
-      // Clear local error if store error is cleared
       setLocalError(null);
     }
   }, [error, isSignUp]);
+
+  // Effect 2: Perform the actual switch when the trigger is set
+  React.useEffect(() => {
+    if (shouldSwitchToSignUp) {
+      console.log("AuthForm Effect 2: Executing switch to Sign Up.");
+      setIsSignUp(true);
+      setShouldSwitchToSignUp(false);
+    }
+  }, [shouldSwitchToSignUp]);
 
   // Clear local error on input change
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(e.target.value);
     setLocalError(null);
+    setShouldSwitchToSignUp(false);
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
     setLocalError(null);
+    setShouldSwitchToSignUp(false);
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Don't submit if already loading
     if (isLoading) return;
     // Clear previous local error before new submission attempt
     setLocalError(null);
+    setShouldSwitchToSignUp(false);
     console.log(
       `AuthForm: Handling submit. Mode: ${isSignUp ? "Sign Up" : "Sign In"}`
     );
@@ -79,7 +90,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
       if (name.trim().length < 3) {
         console.warn("AuthForm: Sign up validation failed - name too short.");
         setLocalError("Name must be at least 3 characters long");
-        return; // Stop submission
+        return; 
       }
       console.log("AuthForm: Calling signUp with phone:", phone, "name:", name);
       await signUp({ phone, name });
@@ -97,6 +108,8 @@ function AuthForm({ isLoading }: AuthFormProps) {
     );
     setIsSignUp(!isSignUp);
     setLocalError(null); // Clear error display on mode switch
+    setShouldSwitchToSignUp(false);
+    clearError(); // Clear the error state in the store on manual toggle
     // Clear input fields on mode switch for better UX
     setPhone("");
     setName("");
