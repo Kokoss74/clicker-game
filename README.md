@@ -85,6 +85,30 @@ yarn build
 ```
 This command builds the application for production in the `dist` folder.
 
+## Testing
+
+The project includes a comprehensive testing setup:
+
+*   **Unit & Integration Tests:** Using Vitest and React Testing Library (RTL).
+*   **End-to-End (E2E) Tests:** Using Playwright.
+
+The testing strategy is documented in `TESTING_STRATEGY.md` (Russian) and `TESTING_STRATEGY_EN.md` (English).
+
+### Running Tests
+
+*   **Run Unit/Integration Tests (Vitest):**
+    ```bash
+    npm test
+    ```
+*   **Run E2E Tests (Playwright):**
+    ```bash
+    npm run test:e2e
+    ```
+*   **Run E2E Tests with UI (Playwright):**
+    ```bash
+    npm run test:e2e:ui
+    ```
+
 ## Author
 
 Created by Pasha Feldman - Full Stack Developer
