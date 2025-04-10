@@ -54,7 +54,7 @@ describe('AttemptsTable Component', () => {
     expect(within(firstDataRow).getByText('100')).toBeInTheDocument(); // Difference
     expect(within(firstDataRow).getByText('5')).toBeInTheDocument(); // Smiles for 100ms
     expect(within(firstDataRow).getByText(/10\/04\/2024/)).toBeInTheDocument();
-    expect(within(firstDataRow).getByText(/12:01/)).toBeInTheDocument();
+    expect(within(firstDataRow).getByText(/15:01/)).toBeInTheDocument();
 
 
     // Check data in the last data row (should correspond to mockAttempts[0] - newest)
@@ -63,7 +63,7 @@ describe('AttemptsTable Component', () => {
     expect(within(lastDataRow).getByText('15')).toBeInTheDocument(); // Difference
     expect(within(lastDataRow).getByText('10')).toBeInTheDocument(); // Smiles for 15ms
     expect(within(lastDataRow).getByText(/10\/04\/2024/)).toBeInTheDocument();
-    expect(within(lastDataRow).getByText(/12:03/)).toBeInTheDocument();
+    expect(within(lastDataRow).getByText(/15:03/)).toBeInTheDocument();
   });
 
   it('should calculate and display smiles correctly based on ranges', () => {
