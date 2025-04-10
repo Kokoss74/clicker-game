@@ -39,28 +39,30 @@ describe('useTimer hook', () => {
     });
 
     // Time should update based on the *new* Date() call inside the interval
-    const expectedTime = new Date(2024, 3, 10, 10, 20, 30, 115); // initial + 15ms
+    // The hook updates every 10ms, so after advancing by 15ms, it will have updated once (at 10ms)
+    const expectedTime = new Date(2024, 3, 10, 10, 20, 30, 110); // initial + 10ms (interval)
     const expectedHours = String(expectedTime.getHours()).padStart(2, '0');
     const expectedMinutes = String(expectedTime.getMinutes()).padStart(2, '0');
     const expectedSeconds = String(expectedTime.getSeconds()).padStart(2, '0');
     const expectedMs = String(expectedTime.getMilliseconds()).padStart(3, '0');
 
-    expect(result.current.time).toBe(`${expectedHours}:${expectedMinutes}:${expectedSeconds}:${expectedMs}`); // 10:20:30:115
-    expect(result.current.milliseconds).toBe(expectedTime.getMilliseconds()); // 115
+    expect(result.current.time).toBe(`${expectedHours}:${expectedMinutes}:${expectedSeconds}:${expectedMs}`); // 10:20:30:110
+    expect(result.current.milliseconds).toBe(expectedTime.getMilliseconds()); // 110
 
     // Advance time again
     act(() => {
        vi.advanceTimersByTime(50); // Advance by 50ms
     });
 
-    const secondExpectedTime = new Date(2024, 3, 10, 10, 20, 30, 165); // initial + 15ms + 50ms
+    // After advancing by 50ms more, the hook will have updated 5 more times (every 10ms)
+    const secondExpectedTime = new Date(2024, 3, 10, 10, 20, 30, 160); // initial + 10ms + 50ms
     const secondExpectedHours = String(secondExpectedTime.getHours()).padStart(2, '0');
     const secondExpectedMinutes = String(secondExpectedTime.getMinutes()).padStart(2, '0');
     const secondExpectedSeconds = String(secondExpectedTime.getSeconds()).padStart(2, '0');
     const secondExpectedMs = String(secondExpectedTime.getMilliseconds()).padStart(3, '0');
 
-    expect(result.current.time).toBe(`${secondExpectedHours}:${secondExpectedMinutes}:${secondExpectedSeconds}:${secondExpectedMs}`); // 10:20:30:165
-    expect(result.current.milliseconds).toBe(secondExpectedTime.getMilliseconds()); // 165
+    expect(result.current.time).toBe(`${secondExpectedHours}:${secondExpectedMinutes}:${secondExpectedSeconds}:${secondExpectedMs}`); // 10:20:30:160
+    expect(result.current.milliseconds).toBe(secondExpectedTime.getMilliseconds()); // 160
   });
 
   it('should stop the timer', () => {
