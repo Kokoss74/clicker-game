@@ -99,8 +99,9 @@ describe('useAuthStore', () => {
       expect(useAuthStore.getState().loading).toBe(true);
       expect(useAuthStore.getState().error).toBeNull();
 
-      // Advance timers to bypass setTimeout
-      vi.advanceTimersByTime(1500);
+      // Execute all pending timers and promises
+      await vi.runAllTimersAsync();
+      await Promise.resolve(); // Flush microtasks
 
       await promise; // Wait for completion
 
@@ -136,7 +137,8 @@ describe('useAuthStore', () => {
 
        const { signUp } = useAuthStore.getState();
        const promise = signUp(signUpData);
-       vi.advanceTimersByTime(1500); // Advance timer
+       await vi.runAllTimersAsync();
+       await Promise.resolve(); // Flush microtasks
        await promise;
 
        const state = useAuthStore.getState();
@@ -151,7 +153,8 @@ describe('useAuthStore', () => {
 
        const { signUp } = useAuthStore.getState();
        const promise = signUp(signUpData);
-       vi.advanceTimersByTime(1500); // Advance timer
+       await vi.runAllTimersAsync();
+       await Promise.resolve(); // Flush microtasks
        await promise;
 
        const state = useAuthStore.getState();
