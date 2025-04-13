@@ -19,6 +19,7 @@ This is a web-based clicker game where the objective is to click a button as clo
 *   **Dark/Light Theme:** Supports switching between dark and light visual themes for user preference.
 *   **Responsive Design:** The user interface adapts gracefully to various screen sizes, ensuring usability on desktops, tablets, and mobile devices.
 *   **Comprehensive Logging:** Includes detailed logging mechanisms (e.g., in the browser console) to aid in development, debugging, and monitoring application behavior.
+*   **Advanced Client-Side Monitoring:** Integrated with Datadog for real-time performance tracking and error logging.
 
 ## Tech Stack
 
@@ -34,6 +35,11 @@ This is a web-based clicker game where the objective is to click a button as clo
         *   Supabase Auth for user authentication.
         *   Supabase Database Functions (PL/pgSQL) for core game logic (recording attempts, handling cooldowns, calculating best result smiles).
         *   Row Level Security (RLS) for data protection.
+*   **Monitoring:**
+    *   Datadog client-side monitoring libraries for:
+        *   Real-time frontend performance tracking
+        *   Error detection and logging
+        *   User interaction and session analytics
 
 ## Getting Started
 
@@ -42,6 +48,7 @@ This is a web-based clicker game where the objective is to click a button as clo
 *   Node.js (v18 or higher recommended)
 *   npm or yarn package manager
 *   A Supabase account and project
+*   A Datadog account (optional, but recommended for advanced monitoring)
 
 ### Installation
 
@@ -59,10 +66,12 @@ This is a web-based clicker game where the objective is to click a button as clo
 3.  **Set up environment variables:**
     *   Create a `.env` file in the root of the project.
     *   Get your Supabase project URL and anon key from your Supabase project settings (Project Settings -> API).
+    *   Get your Datadog client token from your Datadog account.
     *   Add the following lines to your `.env` file, replacing the placeholders:
         ```dotenv
         VITE_SUPABASE_URL=your_supabase_project_url
         VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+        VITE_DATADOG_CLIENT_TOKEN=your_datadog_client_token
         ```
 4.  **Set up Supabase Backend:**
     *   Follow the instructions in the `supabase_setup.md` file to create the necessary tables, functions, policies, and triggers in your Supabase project.
