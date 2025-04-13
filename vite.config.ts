@@ -1,8 +1,9 @@
-import { defineConfig, loadEnv } from 'vite';
+import { loadEnv } from 'vite';
+import { defineConfig as defineVitestConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineVitestConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const monitoringEnv = loadEnv('monitoring', process.cwd(), '');
   const mergedEnv = { ...env, ...monitoringEnv };
@@ -23,26 +24,22 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       exclude: ['lucide-react'],
     },
+    // Vitest configuration
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/setupTests.ts',
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/tests-e2e/**',
+        '**/.{idea,git,cache,output,temp}/**'
+      ],
+      // You can add coverage configuration here later if needed
+      // coverage: {
+      //   provider: 'v8', // or 'istanbul'
+      //   reporter: ['text', 'json', 'html'],
+      // },
+    },
   };
 });
-
-const vitestConfig = defineConfig({
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/setupTests.ts',
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/tests-e2e/**',
-      '**/.{idea,git,cache,output,temp}/**'
-    ],
-    // You can add coverage configuration here later if needed
-    // coverage: {
-    //   provider: 'v8', // or 'istanbul'
-    //   reporter: ['text', 'json', 'html'],
-    // },
-  },
-});
-
-export default mergeConfig(viteConfig, vitestConfig);

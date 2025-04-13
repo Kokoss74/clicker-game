@@ -5,8 +5,8 @@ test.describe('Authentication Flow', () => {
     // Navigate to the base URL (should show AuthForm initially)
     await page.goto('/');
 
-    // 1. Wait for the main application header to be visible (indicates loading is complete)
-    await expect(page.getByRole('heading', { name: /clicker game/i })).toBeVisible();
+    // 1. Wait for the main application header text to be visible (indicates loading is complete)
+    await expect(page.getByText(/clicker game/i)).toBeVisible();
 
     // 2. Now check if the "Sign In" heading within AuthForm is visible
     await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible();
