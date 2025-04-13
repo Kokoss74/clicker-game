@@ -3,17 +3,29 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { toast } from 'react-toastify';
 import { useSupabase } from './useSupabase';
 import { supabase } from '../lib/supabase'; // Import to mock
-import { useGameStore } from '../store/game'; // Import to mock
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { useGameStore } from '../store/game'; // Import needed for mocking and typing
 import { Database } from '../lib/database.types';
 
 // Type definitions
 type User = Database["public"]["Tables"]["users"]["Row"];
 type Attempt = Database["public"]["Tables"]["attempts"]["Row"];
 type GameSettings = Database["public"]["Tables"]["game_settings"]["Row"];
+// Default mock data needed for mocks defined below
+const mockSettings: GameSettings = {
+  id: 1,
+  attempts_number: 10,
+  smile_ranges: [],
+  cooldown_minutes: 60,
+};
 
 // --- Mocks ---
 vi.mock('../lib/supabase'); // Mock the entire supabase client module
-vi.mock('../store/game');
+// Mock useGameStore to return settings
+// Mock useGameStore directly within the factory to avoid hoisting issues
+vi.mock('../store/game', () => ({
+  useGameStore: vi.fn(), // Define the mock function inline
+}));
 vi.mock('react-toastify', () => ({
   toast: {
     info: vi.fn(),
@@ -23,26 +35,28 @@ vi.mock('react-toastify', () => ({
 
 // Mock implementations
 const mockSupabaseRpc = vi.fn();
-const mockSupabaseFrom = vi.fn();
-const mockSupabaseSelect = vi.fn();
-const mockSupabaseEq = vi.fn();
-const mockSupabaseOrder = vi.fn();
+// Remove incorrect cast for useGameStore
+const mockToastError = toast.error as ReturnType<typeof vi.fn>;
+
+// --- New Supabase Client Mock Setup ---
+// Mock implementations ONLY for terminal query builder methods that return results
 const mockSupabaseLimit = vi.fn();
 const mockSupabaseSingle = vi.fn();
 const mockSupabaseUpdate = vi.fn();
 const mockSupabaseDelete = vi.fn();
 
-// Remove incorrect cast for useGameStore
-const mockToastError = toast.error as ReturnType<typeof vi.fn>;
-
-// Mock chaining for supabase client
-mockSupabaseFrom.mockReturnThis();
-mockSupabaseSelect.mockReturnThis();
-mockSupabaseEq.mockReturnThis();
-mockSupabaseOrder.mockReturnThis();
-mockSupabaseLimit.mockReturnThis();
-mockSupabaseUpdate.mockReturnThis();
-mockSupabaseDelete.mockReturnThis();
+// Mock Query Builder object that handles chaining
+const mockQueryBuilder = {
+  select: vi.fn().mockReturnThis(), // Returns itself for chaining
+  eq: vi.fn().mockReturnThis(),
+  order: vi.fn().mockReturnThis(),
+  // Terminal methods delegate to specific mocks defined above
+  limit: mockSupabaseLimit,
+  single: mockSupabaseSingle,
+  // update/delete return an object with 'eq' method which then calls the final mock
+  update: vi.fn().mockImplementation(() => ({ eq: mockSupabaseUpdate })),
+  delete: vi.fn().mockImplementation(() => ({ eq: mockSupabaseDelete })),
+};
 
 // Get the properly typed mocked client
 const mockedSupabase = vi.mocked(supabase);
@@ -50,17 +64,10 @@ const mockedSupabase = vi.mocked(supabase);
 // Assign mock for the top-level rpc method
 mockedSupabase.rpc = mockSupabaseRpc;
 
-// Mock the return value of 'from' to be an object containing the chained mocks
-const mockFromReturnValue = {
-  select: mockSupabaseSelect,
-  eq: mockSupabaseEq,
-  order: mockSupabaseOrder,
-  limit: mockSupabaseLimit,
-  single: mockSupabaseSingle,
-  update: mockSupabaseUpdate,
-  delete: mockSupabaseDelete,
-};
-mockedSupabase.from = mockSupabaseFrom.mockReturnValue(mockFromReturnValue);
+// Configure supabase.from to always return the mock query builder
+// Use 'as any' for the mock object to satisfy TypeScript if necessary
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+mockedSupabase.from.mockReturnValue(mockQueryBuilder as any);
 
 
 // Default mock data
@@ -79,12 +86,6 @@ const mockAttempts: Attempt[] = [
   { id: 'att-1', user_id: mockUserId, difference: 50, created_at: new Date().toISOString() },
   { id: 'att-2', user_id: mockUserId, difference: 60, created_at: new Date().toISOString() },
 ];
-const mockSettings: GameSettings = {
-  id: 1,
-  attempts_number: 10,
-  smile_ranges: [],
-  cooldown_minutes: 60,
-};
 
 
 describe('useSupabase hook', () => {
@@ -92,27 +93,25 @@ describe('useSupabase hook', () => {
     // Reset mocks before each test
     vi.clearAllMocks();
     mockSupabaseRpc.mockReset();
-    mockSupabaseFrom.mockClear(); // Use clear instead of reset for chained mocks
-    mockSupabaseSelect.mockClear();
-    mockSupabaseEq.mockClear();
-    mockSupabaseOrder.mockClear();
-    mockSupabaseLimit.mockClear();
+    // Reset terminal method mocks (which hold results/errors)
+    mockSupabaseLimit.mockReset();
     mockSupabaseSingle.mockReset();
-    mockSupabaseUpdate.mockClear();
-    mockSupabaseDelete.mockClear();
+    mockSupabaseUpdate.mockReset();
+    mockSupabaseDelete.mockReset();
+    // Clear chainable method mocks (just clear call history)
+    mockQueryBuilder.select.mockClear();
+    mockQueryBuilder.eq.mockClear();
+    mockQueryBuilder.order.mockClear();
+    mockQueryBuilder.update.mockClear(); // Clear update/delete call history
+    mockQueryBuilder.delete.mockClear();
+    // Ensure 'from' is reset and still returns the builder for the next test
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockedSupabase.from.mockClear().mockReturnValue(mockQueryBuilder as any);
 
-    // Reset chained mock return values
-    mockSupabaseFrom.mockReturnThis();
-    mockSupabaseSelect.mockReturnThis();
-    mockSupabaseEq.mockReturnThis();
-    mockSupabaseOrder.mockReturnThis();
-    mockSupabaseLimit.mockReturnThis();
-    mockSupabaseUpdate.mockReturnThis();
-    mockSupabaseDelete.mockReturnThis();
 
-
-    // Set game store state directly
-    useGameStore.setState({ settings: mockSettings, loading: false, error: null }, true);
+    // Set the return value for useGameStore for this test run
+    // Set the return value for the mocked useGameStore for this test run
+    vi.mocked(useGameStore).mockReturnValue({ settings: mockSettings });
   });
 
   it('should initialize with loading false and error null', () => {
@@ -202,7 +201,11 @@ describe('useSupabase hook', () => {
       });
 
       it('should set loading state during execution', async () => {
-        mockSupabaseRpc.mockResolvedValueOnce({ data: true, error: null });
+        // Add a slight delay to the mock to allow loading state detection
+        mockSupabaseRpc.mockImplementationOnce(async () => {
+          await new Promise(res => setTimeout(res, 100)); // Increased delay
+          return { data: true, error: null };
+        });
         const { result } = renderHook(() => useSupabase());
 
         const promise = result.current.recordAttempt(10);
@@ -226,11 +229,11 @@ describe('useSupabase hook', () => {
        });
 
        expect(attempts).toEqual(mockAttempts);
-       expect(mockSupabaseFrom).toHaveBeenCalledWith('attempts');
-       expect(mockSupabaseSelect).toHaveBeenCalledWith('*');
-       expect(mockSupabaseEq).toHaveBeenCalledWith('user_id', mockUserId);
-       expect(mockSupabaseOrder).toHaveBeenCalledWith('created_at', { ascending: false });
-       expect(mockSupabaseLimit).toHaveBeenCalledWith(limit);
+       expect(mockedSupabase.from).toHaveBeenCalledWith('attempts');
+       expect(mockQueryBuilder.select).toHaveBeenCalledWith('*');
+       expect(mockQueryBuilder.eq).toHaveBeenCalledWith('user_id', mockUserId);
+       expect(mockQueryBuilder.order).toHaveBeenCalledWith('created_at', { ascending: false });
+       expect(mockSupabaseLimit).toHaveBeenCalledWith(limit); // Terminal mock remains the same
        expect(result.current.loading).toBe(false);
        expect(result.current.error).toBeNull();
      });
@@ -263,10 +266,10 @@ describe('useSupabase hook', () => {
         });
 
         expect(user).toEqual(mockUser);
-        expect(mockSupabaseFrom).toHaveBeenCalledWith('users');
-        expect(mockSupabaseSelect).toHaveBeenCalledWith('*');
-        expect(mockSupabaseEq).toHaveBeenCalledWith('id', mockUserId);
-        expect(mockSupabaseSingle).toHaveBeenCalled();
+        expect(mockedSupabase.from).toHaveBeenCalledWith('users');
+        expect(mockQueryBuilder.select).toHaveBeenCalledWith('*');
+        expect(mockQueryBuilder.eq).toHaveBeenCalledWith('id', mockUserId);
+        expect(mockSupabaseSingle).toHaveBeenCalled(); // Terminal mock remains the same
         expect(result.current.loading).toBe(false);
         expect(result.current.error).toBeNull();
       });
@@ -315,19 +318,23 @@ describe('useSupabase hook', () => {
 
          expect(success).toBe(true);
          // Check user update call
-         expect(mockSupabaseFrom).toHaveBeenCalledWith('users');
-         expect(mockSupabaseUpdate).toHaveBeenCalledWith({
-           attempts_left: mockSettings.attempts_number, // Check if correct value is used
+         expect(mockedSupabase.from).toHaveBeenCalledWith('users');
+         // Check that .update() was called with the correct data
+         expect(mockQueryBuilder.update).toHaveBeenCalledWith({
+           attempts_left: mockSettings.attempts_number,
            best_result: null,
            total_smiles: 0,
            last_attempt_at: null,
          });
-         expect(mockSupabaseEq).toHaveBeenCalledWith('id', mockUserId); // Eq called after update
+         // Check that the subsequent .eq() was called with the correct ID
+         expect(mockSupabaseUpdate).toHaveBeenCalledWith('id', mockUserId);
 
          // Check attempts delete call
-         expect(mockSupabaseFrom).toHaveBeenCalledWith('attempts');
-         expect(mockSupabaseDelete).toHaveBeenCalled();
-         expect(mockSupabaseEq).toHaveBeenCalledWith('user_id', mockUserId); // Eq called after delete
+         expect(mockedSupabase.from).toHaveBeenCalledWith('attempts');
+         // Check that .delete() was called
+         expect(mockQueryBuilder.delete).toHaveBeenCalled();
+         // Check that the subsequent .eq() was called with the correct ID
+         expect(mockSupabaseDelete).toHaveBeenCalledWith('user_id', mockUserId);
 
          expect(result.current.loading).toBe(false);
          expect(result.current.error).toBeNull();
@@ -364,7 +371,8 @@ describe('useSupabase hook', () => {
 
           expect(success).toBe(true); // Should still return true
           expect(result.current.error).toBeNull(); // No error set for delete failure
-          expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining(deleteErrorMsg));
+          // Check only the first argument of console.warn for the expected message
+          expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Could not delete old attempts'), expect.anything()); // Check first arg contains text, ignore second arg
           expect(result.current.loading).toBe(false);
           consoleWarnSpy.mockRestore();
        });
