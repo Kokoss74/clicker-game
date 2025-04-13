@@ -40,6 +40,12 @@ This is a web-based clicker game where the objective is to click a button as clo
         *   Real-time frontend performance tracking
         *   Error detection and logging
         *   User interaction and session analytics
+    *   PostHog for comprehensive web analytics and user insights:
+        *   Detailed user behavior tracking
+        *   Session replays for understanding user interactions
+        *   Funnel and conversion analysis
+        *   Feature flag management
+        *   A/B testing capabilities
 
 ## Getting Started
 
@@ -49,6 +55,7 @@ This is a web-based clicker game where the objective is to click a button as clo
 *   npm or yarn package manager
 *   A Supabase account and project
 *   A Datadog account (optional, but recommended for advanced monitoring)
+*   A PostHog account for web analytics and session insights
 
 ### Installation
 
@@ -67,11 +74,14 @@ This is a web-based clicker game where the objective is to click a button as clo
     *   Create a `.env` file in the root of the project.
     *   Get your Supabase project URL and anon key from your Supabase project settings (Project Settings -> API).
     *   Get your Datadog client token from your Datadog account.
+    *   Get your PostHog project key and host from your PostHog account.
     *   Add the following lines to your `.env` file, replacing the placeholders:
         ```dotenv
         VITE_SUPABASE_URL=your_supabase_project_url
         VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
         VITE_DATADOG_CLIENT_TOKEN=your_datadog_client_token
+        VITE_PUBLIC_POSTHOG_KEY=your_posthog_project_key
+        VITE_PUBLIC_POSTHOG_HOST=your_posthog_host_url
         ```
 4.  **Set up Supabase Backend:**
     *   Follow the instructions in the `supabase_setup.md` file to create the necessary tables, functions, policies, and triggers in your Supabase project.
