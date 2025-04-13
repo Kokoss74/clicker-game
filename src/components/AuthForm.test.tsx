@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'; // Add act
-import '@testing-library/jest-dom'; // For extended matchers like .toBeInTheDocument()
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'; 
 import { toast } from 'react-toastify';
 import AuthForm from './AuthForm';
 import { useAuthStore } from '../store/auth';
@@ -50,7 +49,7 @@ describe('AuthForm Component', () => {
 
   // Helper function to render the component with props
   const renderComponent = (isLoading = false) => {
-    render(<AuthForm isLoading={isLoading} />);
+    return render(<AuthForm isLoading={isLoading} />); 
   };
 
   it('should render Sign In form by default', () => {
@@ -143,7 +142,7 @@ describe('AuthForm Component', () => {
     mockAuthStoreState.error = errorMessage;
     vi.mocked(useAuthStore).mockReturnValue(mockAuthStoreState);
 
-    renderComponent();
+    const { rerender } = renderComponent(); 
 
     // Error should be visible initially
     await waitFor(() => {
@@ -162,8 +161,13 @@ describe('AuthForm Component', () => {
     // Set error again for sign up mode
     mockAuthStoreState.error = 'Another error';
     vi.mocked(useAuthStore).mockReturnValue(mockAuthStoreState);
-    // Need to rerender or trigger effect somehow if error is set externally after initial render
-    // For simplicity, let's assume error appears after toggle
+    // Rerender the component to pick up the new store state
+    // Use act to wrap state update and rerender if causing warnings
+    act(() => {
+      rerender(<AuthForm isLoading={false} />);
+    });
+
+    // Now wait for the error to appear after rerender
      await waitFor(() => {
        expect(screen.getByText('Another error')).toBeInTheDocument();
      });
@@ -178,27 +182,27 @@ describe('AuthForm Component', () => {
     renderComponent(true); // Pass isLoading=true
 
     expect(screen.getByPlaceholderText(/example: 050-1234567/i)).toBeDisabled();
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeDisabled();
+    expect(screen.getByTestId('submit-button')).toBeDisabled(); // Use data-testid
     expect(screen.getByRole('button', { name: /create an account/i })).toBeDisabled();
 
     // Check loader is visible
-    expect(screen.getByRole('status', { hidden: true })).toBeInTheDocument(); // Loader might not have explicit role, check presence
+    expect(screen.getByTestId('loading-overlay')).toBeInTheDocument(); // Check presence using data-testid
   });
 
    it('should automatically switch to Sign Up on "Invalid login credentials" error', async () => {
      renderComponent(); // Start in Sign In mode
-
+     const { rerender } = render(<AuthForm isLoading={false} />); // Get rerender from initial render
+ 
      // Simulate the error coming from the store *after* initial render
      act(() => {
         mockAuthStoreState.error = "Invalid login credentials";
-        // We need to trigger a re-render or have the component listen correctly.
-        // Let's simulate the effect by directly calling the mock update
+        // Update the mock return value *before* rerendering
         vi.mocked(useAuthStore).mockReturnValue({...mockAuthStoreState});
      });
-     // Rerender might be needed if the hook doesn't update automatically in test
-     // renderComponent(); // This would reset state, not ideal.
-     // Instead, rely on waitFor to catch the state update triggered by useEffect
-
+ 
+     // Rerender the component to pick up the new store state from the hook
+     rerender(<AuthForm isLoading={false} />);
+ 
      await waitFor(() => {
        // Check for the toast message
        expect(mockToastError).toHaveBeenCalledWith("User not registered. Please create an account.");
