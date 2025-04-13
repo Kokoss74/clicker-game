@@ -17,6 +17,7 @@
     "bump:major": "npm version major --no-git-tag-version && node -e \"const v=require('./version.json');v.version=require('./package.json').version;require('fs').writeFileSync('./version.json',JSON.stringify(v,null,2)+'\\n');\""
   },
   "dependencies": {
+    "@datadog/browser-logs": "^6.6.3",
     "@supabase/supabase-js": "^2.39.7",
     "@tsparticles/engine": "^3.8.1",
     "@tsparticles/react": "^3.0.0",

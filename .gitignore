@@ -24,3 +24,5 @@ README_old.md
 *.njsproj
 *.sln
 *.sw?
+
+.env.monitoring
