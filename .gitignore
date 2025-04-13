@@ -25,4 +25,5 @@ README_old.md
 *.sln
 *.sw?
 
+#Environment files
 .env.monitoring
