@@ -6,20 +6,30 @@ This is a web-based clicker game where the objective is to click a button as clo
 
 ## Features
 
-*   **Real-time Timer:** Displays the current time with millisecond precision.
-*   **Click Button:** Allows the user to register their click time. Includes a 2-second cooldown after each click to prevent spamming.
-*   **Attempts System:** Each game session consists of a configurable number of attempts (default: 10).
-*   **Cooldown Period:** After exhausting all attempts in a session, a configurable cooldown period (default: 60 minutes) must pass before a new session can begin.
-*   **Results Table:** Displays the attempts made within the *current* game session, showing the difference (ms), smiles awarded for that specific attempt, and timestamp.
-*   **Best Result Highlighting:** After a session ends, the row corresponding to the best attempt (lowest difference) is highlighted.
-*   **Session Score:** The final score for a session is the number of smiles corresponding to the single best attempt made during that session (displayed after the session ends).
-*   **Game Rules:** A modal window explaining the game objective, rules, and smile calculation.
-*   **Authentication:** Users sign up and log in using their phone number (utilizing Supabase Auth with Email/Password provider behind the scenes).
-*   **Logout:** Users can log out to return to the login screen.
-*   **Dark/Light Theme:** Supports switching between dark and light visual themes for user preference.
-*   **Responsive Design:** The user interface adapts gracefully to various screen sizes, ensuring usability on desktops, tablets, and mobile devices.
-*   **Comprehensive Logging:** Includes detailed logging mechanisms (e.g., in the browser console) to aid in development, debugging, and monitoring application behavior.
-*   **Advanced Client-Side Monitoring:** Integrated with Datadog for real-time performance tracking and error logging.
+### User Interface
+- **Real-time Timer:** Displays the current time with millisecond precision
+- **Results Table:** Displays the attempts made within the *current* game session, showing the difference (ms), smiles awarded for that specific attempt, and timestamp
+- **Best Result Highlighting:** After a session ends, the row corresponding to the best attempt (lowest difference) is highlighted
+- **Game Rules:** A modal window explaining the game objective, rules, and smile calculation
+- **Dark/Light Theme:** Supports switching between dark and light visual themes for user preference
+- **Responsive Design:** The user interface adapts gracefully to various screen sizes, ensuring usability on desktops, tablets, and mobile devices
+
+### Authentication
+- **User Authentication:** Users sign up and log in using their phone number (utilizing Supabase Auth with Email/Password provider behind the scenes)
+- **Logout:** Users can log out to return to the login screen
+
+### Technical Features
+- **Comprehensive Logging:** Includes detailed logging mechanisms (e.g., in the browser console) to aid in development, debugging, and monitoring application behavior
+- **Advanced Client-Side Monitoring:** Integrated with Datadog for real-time performance tracking and error logging
+
+## Game Logic
+
+- **Click Mechanism:** Allows the user to register their click time, aiming to click as close as possible to a whole second mark
+- **Click Cooldown:** Includes a 2-second cooldown after each click to prevent spamming
+- **Attempts System:** Each game session consists of a configurable number of attempts (default: 10)
+- **Session Cooldown:** After exhausting all attempts in a session, a configurable cooldown period (default: 60 minutes) must pass before a new session can begin
+- **Score Calculation:** The final score for a session is the number of smiles corresponding to the single best attempt made during that session
+- **Accuracy Measurement:** Player's accuracy is measured in milliseconds difference from the whole second, determining the number of "smiles" 😊 awarded
 
 ## Tech Stack
 
