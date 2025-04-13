@@ -105,7 +105,10 @@ function AuthForm({ isLoading }: AuthFormProps) {
     <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg relative text-gray-900 dark:text-white transition-colors duration-200">
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-900 bg-opacity-75 flex justify-center items-center rounded-lg z-10">
+        <div
+          data-testid="loading-overlay" // Add test ID
+          className="absolute inset-0 bg-gray-200 dark:bg-gray-900 bg-opacity-75 flex justify-center items-center rounded-lg z-10"
+        >
           <Loader
             size={32}
             className="animate-spin text-gray-900 dark:text-white"
@@ -177,6 +180,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
         {/* Submit Button */}
         <button
           type="submit"
+          data-testid="submit-button" // Add test ID
           className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center gap-2 transition-opacity ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
           }`}

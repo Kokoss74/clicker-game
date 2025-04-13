@@ -20,7 +20,7 @@ export const useGameSession = () => {
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   // Separate initial loading from update loading
-  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true); 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // For attempt submission loading
   const [cooldownEndTime, setCooldownEndTime] = useState<number | null>(null);
 
@@ -33,43 +33,47 @@ export const useGameSession = () => {
       setIsInitialLoading(false); // Finish initial loading even if no user
       return;
     }
-    setIsInitialLoading(true); // Start initial loading
+    let loadedUser: User | null = null;
     try {
-      const loadedUser = (await getUser(user.id)) as User | null;
-      if (!loadedUser) {
-        console.error("loadInitialData: Failed to load user data."); // Logging user load failure
-        toast.error("Failed to load user data.");
-        setCurrentUser(null);
-        setAttempts([]);
-        setIsInitialLoading(false);
-        return;
-      }
-      setCurrentUser(loadedUser);
-
-      const attemptsLimit = settings?.attempts_number ?? 10;
-      let userAttempts: Attempt[] = [];
-
-      if (loadedUser.attempts_left > 0) {
-        const attemptsMadeThisSession =
-          attemptsLimit - loadedUser.attempts_left;
-        if (attemptsMadeThisSession > 0) {
-          userAttempts = await getUserAttempts(
-            user.id,
-            attemptsMadeThisSession
-          );
+        loadedUser = (await getUser(user.id)) as User | null;
+        if (!loadedUser) {
+            console.error("loadInitialData: Failed to load user data.");
+            toast.error("Failed to load user data.");
+            setCurrentUser(null);
+            setAttempts([]);
+            setIsInitialLoading(false);
+            return;
         }
-      } else {
-        userAttempts = await getUserAttempts(user.id, attemptsLimit);
-      }
-      setAttempts(userAttempts);
-    } catch (error) {
-      console.error("loadInitialData: Error loading initial data:", error); // Logging error
-      toast.error(`Error loading initial data: ${(error as Error).message}`);
-      setCurrentUser(null);
-      setAttempts([]);
+        setCurrentUser(loadedUser); 
+
+        // Now try fetching attempts
+        const attemptsLimit = settings?.attempts_number ?? 10;
+        let userAttempts: Attempt[] = [];
+        try {
+             if (loadedUser.attempts_left > 0) {
+                 const attemptsMadeThisSession = attemptsLimit - loadedUser.attempts_left;
+                 if (attemptsMadeThisSession > 0) {
+                     userAttempts = await getUserAttempts(user.id, attemptsMadeThisSession);
+                 }
+             } else {
+                 // Fetch all attempts if user has 0 left (or for history)
+                 userAttempts = await getUserAttempts(user.id, attemptsLimit);
+             }
+             setAttempts(userAttempts);
+        } catch (attemptsError) {
+             console.error("loadInitialData: Error loading attempts:", attemptsError);
+             toast.error(`Error loading attempts: ${(attemptsError as Error).message}`);
+             setAttempts([]); 
+        }
+
+    } catch (userError) { 
+        console.error("loadInitialData: Error loading initial user data:", userError);
+        toast.error(`Error loading initial user data: ${(userError as Error).message}`);
+        setCurrentUser(null); 
+        setAttempts([]);
     } finally {
-      setIsInitialLoading(false); // Finish initial loading
-      console.log("loadInitialData: Initial data load finished."); // Logging finish
+        setIsInitialLoading(false);
+        console.log("loadInitialData: Initial data load finished.");
     }
   }, [user?.id, getUser, getUserAttempts, settings?.attempts_number]);
 
