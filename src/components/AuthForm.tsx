@@ -126,7 +126,7 @@ function AuthForm({ isLoading }: AuthFormProps) {
           <label className="text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 flex items-center gap-1">
             Phone <Phone size={16} />
             {/* Help Icon and Tooltip */}
-            <span data-tooltip-id="phone-tooltip" data-tooltip-content="Israeli formats: 0501234567 or +972501234567" className="ml-1">
+            <span data-tooltip-id="phone-tooltip" data-tooltip-content="Israel format: 0501234567 or +972501234567" className="ml-1">
               <Info size={16} className="text-gray-500 dark:text-gray-400" />
             </span>
             <Tooltip

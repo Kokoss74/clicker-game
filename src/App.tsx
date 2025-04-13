@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import versionData from "../version.json";
 import {
   BrowserRouter as Router,
   Routes,
@@ -67,24 +68,25 @@ function App() {
     <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <ParticlesBackground effectiveTheme={effectiveTheme} />
       <div className="min-h-[100dvh] flex flex-col relative z-10">
-        <header className="text-center py-4">
-          <h1 className="text-3xl font-bold flex items-center justify-center gap-2">
-            <Gamepad2 size={30} />
-            Clicker Game
-            <button
-              onClick={() =>
-                setTheme(effectiveTheme === "dark" ? "light" : "dark")
-              }
-              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              aria-label="Toggle theme"
-            >
-              {effectiveTheme === "dark" ? (
-                <Sun size={20} />
-              ) : (
-                <Moon size={20} />
-              )}
-            </button>
-          </h1>
+        <header className="py-4 text-center">
+          <div className="inline-flex flex-col items-start"> 
+            <div className="flex items-center gap-2 text-3xl font-bold">
+              <Gamepad2 size={30} />
+              <span>Clicker Game</span>
+              <button
+                onClick={() =>
+                  setTheme(effectiveTheme === "dark" ? "light" : "dark")
+                }
+                className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                aria-label="Toggle theme"
+              >
+                {effectiveTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+            </div>
+            <span className="text-xs font-mono text-blue-600 dark:text-yellow-400 mt-1 self-start">
+              v{versionData.version}
+            </span>
+          </div>
         </header>
 
         {/* Main Content Area */}

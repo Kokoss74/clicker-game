@@ -1,7 +1,7 @@
 {
   "name": "clicker-game",
   "private": true,
-  "version": "2.0.3",
+  "version": "2.1.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,9 +11,13 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "bump": "npm version patch --no-git-tag-version && node -e \"const v=require('./version.json');v.version=require('./package.json').version;require('fs').writeFileSync('./version.json',JSON.stringify(v,null,2)+'\\n');\"",
+    "bump:minor": "npm version minor --no-git-tag-version && node -e \"const v=require('./version.json');v.version=require('./package.json').version;require('fs').writeFileSync('./version.json',JSON.stringify(v,null,2)+'\\n');\"",
+    "bump:major": "npm version major --no-git-tag-version && node -e \"const v=require('./version.json');v.version=require('./package.json').version;require('fs').writeFileSync('./version.json',JSON.stringify(v,null,2)+'\\n');\""
   },
   "dependencies": {
+    "@datadog/browser-logs": "^6.6.3",
     "@supabase/supabase-js": "^2.39.7",
     "@tsparticles/engine": "^3.8.1",
     "@tsparticles/react": "^3.0.0",
@@ -22,6 +26,7 @@
     "date-fns": "^3.3.1",
     "exceljs": "^4.4.0",
     "lucide-react": "^0.344.0",
+    "posthog-js": "^1.235.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.51.0",
