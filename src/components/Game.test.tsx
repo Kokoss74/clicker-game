@@ -29,7 +29,7 @@ type MockAttemptsTableProps = { attempts: Attempt[]; bestResultIndex: number | n
 // Mock child components with basic prop types
 vi.mock('./ModalRules', () => ({ default: (props: MockModalRulesProps) => props.isOpen ? <div data-testid="modal-rules">Rules Modal Open</div> : null }));
 vi.mock('./GameStats', () => ({ default: (props: MockGameStatsProps) => <div data-testid="game-stats">Attempts Left: {props.currentUser?.attempts_left}</div> }));
-vi.mock('./AttemptsTable', () => ({ default: (props: MockAttemptsTableProps) => <div data-testid="attempts-table">Attempts: {props.attempts?.length}, BestIndex: {props.bestResultIndex}</div> }));
+vi.mock('./AttemptsTable', () => ({ default: (props: MockAttemptsTableProps) => <div data-testid="attempts-table">Attempts: {props.attempts?.length}, BestIndex: {props.bestResultIndex === null ? 'null' : props.bestResultIndex}</div> }));
 
 
 // --- Mock Implementations ---
@@ -116,22 +116,36 @@ describe('Game Component', () => {
    });
 
   it('should handle successful button click', async () => {
+    vi.useRealTimers(); // Switch to real timers for this test ONLY
     render(<Game />);
     const clickButton = screen.getByRole('button', { name: /click me/i });
 
+    // Click the button
     await act(async () => {
       fireEvent.click(clickButton);
-      // Advance timer for the 2s delay
-      vi.advanceTimersByTime(2000);
     });
 
+    // No need to advance fake timers or run pending timers when using real timers
+
+
+    // Wait for the submit function to be called
+    await waitFor(() => {
+        expect(mockGameSessionState.handleAttemptSubmit).toHaveBeenCalledWith(mockTimerState.milliseconds);
+    });
+
+    // Wait for the success toast to be called (simplified check)
+    await waitFor(() => {
+        expect(mockToastSuccess).toHaveBeenCalled();
+    });
+    // Optionally, check the specific message after confirming the call
+    expect(mockToastSuccess).toHaveBeenCalledWith('Difference: 123 ms.');
+
+
+    // Check timer interactions
     expect(mockTimerState.stopTimer).toHaveBeenCalled();
-    // Check frozen time display
     expect(screen.getByText(mockTimerState.time)).toBeInTheDocument(); // Should show frozen time
-    expect(mockGameSessionState.handleAttemptSubmit).toHaveBeenCalledWith(mockTimerState.milliseconds); // diff calculation: 123 < 500 -> 123
-    await waitFor(() => expect(mockToastSuccess).toHaveBeenCalledWith('Difference: 123 ms.'));
     expect(mockTimerState.startTimer).toHaveBeenCalledTimes(2); // Initial + after submit
-  });
+  }, 15000); // Increased timeout significantly for real timers
 
   it('should prevent click during 2-second delay', async () => {
     render(<Game />);
@@ -200,7 +214,7 @@ describe('Game Component', () => {
 
    it('should allow click if attempts are 0 but cooldown is over', async () => {
      const now = Date.now();
-     const endTime = now - 10000; // 10 seconds ago (cooldown finished)
+     const endTime = now - 5000; // 5 seconds ago (cooldown finished)
      mockUseGameSession.mockReturnValue({
        ...mockGameSessionState,
        currentUser: { ...mockGameSessionState.currentUser!, attempts_left: 0 },
@@ -241,23 +255,40 @@ describe('Game Component', () => {
   });
 
   it('should call signOut and show toast on sign out click', async () => {
+    vi.useRealTimers(); // Switch to real timers for this test ONLY
     render(<Game />);
     // Find logout icon/button (Lucide icons don't have implicit roles)
     const logoutButton = screen.getByTestId('game-stats').parentElement?.querySelector('svg.lucide-log-out'); // Find by class or structure
     expect(logoutButton).toBeInTheDocument();
 
     if (logoutButton) {
+        // Click the button
         await act(async () => {
             fireEvent.click(logoutButton);
         });
-        expect(mockAuthState.signOut).toHaveBeenCalled();
-        await waitFor(() => expect(mockToastInfo).toHaveBeenCalledWith("You have been logged out."));
+
+        // No need to run fake timers when using real timers
+
+        // Wait for signOut mock to be called
+        await waitFor(() => {
+            expect(mockAuthState.signOut).toHaveBeenCalled();
+        });
+
+        // Wait for the info toast to be called (simplified check)
+        await waitFor(() => {
+            expect(mockToastInfo).toHaveBeenCalled();
+        });
+        // Optionally, check the specific message after confirming the call
+        expect(mockToastInfo).toHaveBeenCalledWith("You have been logged out.");
+
     } else {
-        throw new Error("Logout button not found");
+        // Consider adding a data-testid for reliability.
+        throw new Error("Logout button SVG not found. Consider adding a data-testid='logout-button' to the button/icon container in Game.tsx");
     }
-  });
+  }, 15000); // Increased timeout significantly for real timers
 
    it('should pass correct bestResultIndex to AttemptsTable when game ends', async () => {
+    vi.useRealTimers(); // Switch to real timers for this test ONLY
      // Define Attempt type locally or import if needed
      type Attempt = Database["public"]["Tables"]["attempts"]["Row"];
      const attemptsData: Attempt[] = [
@@ -272,15 +303,17 @@ describe('Game Component', () => {
        attempts: attemptsData,
      });
 
-     render(<Game />);
+     render(<Game />); // Render the component
 
-     // Wait for the component to potentially calculate the best index
+     // No need to run fake timers when using real timers
+
+     // Now wait for the table content to update
      await waitFor(() => {
        const table = screen.getByTestId('attempts-table');
        // Best attempt is index 1 in the original array
        expect(table).toHaveTextContent('BestIndex: 1');
      });
-   });
+ }, 15000); // Increased timeout significantly for real timers
 
     it('should pass null bestResultIndex to AttemptsTable when game is ongoing', () => {
       // Default state has attempts_left > 0

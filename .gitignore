@@ -28,3 +28,6 @@ dist-ssr
 coverage/
 playwright-report/
 test-results/
+
+# Environment files
+.env.monitoring
