@@ -19,7 +19,13 @@ const vitestConfig = defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './src/setupTests.ts', // We'll create this file next
+    setupFiles: './src/setupTests.ts',
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/tests-e2e/**',
+      '**/.{idea,git,cache,output,temp}/**'
+    ],
     // You can add coverage configuration here later if needed
     // coverage: {
     //   provider: 'v8', // or 'istanbul'
