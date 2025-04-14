@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { supabase } from "../lib/supabase";
 import { Database, SmileRange } from "../lib/database.types";
 
-// Ensure GameSettings includes the new field from Database types
 type GameSettings = Database["public"]["Tables"]["game_settings"]["Row"];
 
 // Define default smile ranges as a fallback
@@ -21,8 +20,8 @@ interface GameState {
   loading: boolean;
   error: string | null;
   loadSettings: () => Promise<void>;
-  getSmileRanges: () => SmileRange[]; // Helper to get ranges or default
-  getCooldownMinutes: () => number; // Helper to get cooldown or default
+  getSmileRanges: () => SmileRange[]; 
+  getCooldownMinutes: () => number; 
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -31,43 +30,40 @@ export const useGameStore = create<GameState>((set, get) => ({
   error: null,
 
   loadSettings: async () => {
-    console.log("GameStore: loadSettings started."); // Logging start
+    console.log("GameStore: loadSettings started."); 
     try {
       set({ loading: true, error: null });
 
       const { data: settings, error } = await supabase
         .from("game_settings")
         .select()
-        .eq("id", 1) // Assuming settings are stored with id=1
-        .maybeSingle(); // Use maybeSingle to handle null case gracefully
+        .eq("id", 1) 
+        .maybeSingle(); 
 
       if (error) {
-        console.error("GameStore: Error fetching settings from Supabase:", error); // Logging fetch error
+        console.error("GameStore: Error fetching settings from Supabase:", error); 
         throw error;
       }
       // Ensure smile_ranges is an array and cooldown_minutes is a number, providing defaults if null/invalid
       const loadedSettings = settings
         ? {
             ...settings,
-            // Ensure smile_ranges is valid or use default
             smile_ranges:
               Array.isArray(settings.smile_ranges) &&
               settings.smile_ranges.length > 0
                 ? settings.smile_ranges
                 : defaultSmileRanges,
-            // Ensure cooldown_minutes is valid or use default
             cooldown_minutes:
               typeof settings.cooldown_minutes === "number" &&
               settings.cooldown_minutes > 0
                 ? settings.cooldown_minutes
                 : defaultCooldownMinutes,
           }
-        : null; // If settings are null from DB, keep it null
+        : null; 
 
-      console.log("GameStore: Final loaded settings:", loadedSettings); // Log the processed settings object
+      console.log("GameStore: Final loaded settings:", loadedSettings); 
       set({ settings: loadedSettings, loading: false });
     } catch (error) {
-      // Existing console.error is good here
       console.error("Error loading game settings:", error);
       set({ error: (error as Error).message, loading: false });
       // Set settings to null in case of error, helpers will provide defaults
@@ -75,10 +71,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
   },
 
-  // Helper function to safely get smile ranges, providing defaults if needed
   getSmileRanges: (): SmileRange[] => {
     const settings = get().settings;
-    // Check if settings exist and smile_ranges is a non-empty array
     if (
       settings &&
       Array.isArray(settings.smile_ranges) &&
@@ -86,13 +80,11 @@ export const useGameStore = create<GameState>((set, get) => ({
     ) {
       return settings.smile_ranges;
     }
-    return defaultSmileRanges; // Return default otherwise
+    return defaultSmileRanges; 
   },
 
-  // Helper function to safely get cooldown minutes, providing default if needed
   getCooldownMinutes: (): number => {
     const settings = get().settings;
-    // Check if settings exist and cooldown_minutes is a positive number
     if (
       settings &&
       typeof settings.cooldown_minutes === "number" &&
@@ -100,6 +92,6 @@ export const useGameStore = create<GameState>((set, get) => ({
     ) {
       return settings.cooldown_minutes;
     }
-    return defaultCooldownMinutes; // Return default otherwise
+    return defaultCooldownMinutes; 
   },
 }));
